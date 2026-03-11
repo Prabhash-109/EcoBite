@@ -5,11 +5,13 @@ import Home from './pages/Home';
 
 import RestaurantDirectory from './pages/RestaurantDirectory';
 import Register from './pages/Register';
+import Login from './pages/Login';  
 
 // Import the new pages
 import RestaurantDashboard from './pages/RestaurantDashboard';
 import AddFood from './pages/AddFood';
 import VolunteerDashboard from './pages/VolunteerDashboard';
+
 
 function App() {
   return (
@@ -18,6 +20,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/restaurants" element={<RestaurantDirectory />} />
         
         {/* New Routes */}
