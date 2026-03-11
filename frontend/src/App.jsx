@@ -2,8 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
-import NGORegister from './pages/NGORegister';
+
 import RestaurantDirectory from './pages/RestaurantDirectory';
+import Register from './pages/Register';
 
 // Import the new pages
 import RestaurantDashboard from './pages/RestaurantDashboard';
@@ -16,7 +17,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/register-ngo" element={<NGORegister />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/restaurants" element={<RestaurantDirectory />} />
         
         {/* New Routes */}

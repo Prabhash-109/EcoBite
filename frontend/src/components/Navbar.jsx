@@ -19,8 +19,8 @@ export default function Navbar() {
         <Link to="/restaurant-dashboard" className="hover:text-gray-900 transition">Restaurant Portal</Link>
         <Link to="/volunteer-dashboard" className="hover:text-gray-900 transition">Volunteer Hub</Link>
         
-        <Link to="/register-ngo" className="bg-green-600 text-white px-6 py-3 rounded-2xl hover:bg-green-700 transition shadow-sm shadow-green-100">
-          NGO Join
+        <Link to="/register" className="bg-green-600 text-white px-6 py-3 rounded-2xl hover:bg-green-700 transition shadow-sm shadow-green-100">
+          Join Us
         </Link>
       </div>
     </nav>
