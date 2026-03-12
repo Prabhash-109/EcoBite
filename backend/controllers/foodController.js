@@ -34,7 +34,7 @@ exports.createFood = async (req, res) => {
     });
 
     res.status(201).json({
-      message: 'Food donation created successfully',
+      message: 'Food Added Successfully',
       food: newFood
     });
   } catch (error) {
