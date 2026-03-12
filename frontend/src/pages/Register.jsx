@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Mail, Lock, User, Briefcase } from 'lucide-react';
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+import { handleSuccess, handleError } from "../utils";
 
 export default function Register() {
-
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     account_type: "volunteer",
     name: "",
@@ -23,29 +25,17 @@ export default function Register() {
     e.preventDefault();
 
     try {
-
       const res = await axios.post(
-        "http://localhost:3000/api/auth/register",
+        `${API_URL}/api/auth/register`,
         formData
       );
 
-      alert(res.data.message);
-
-      setFormData({
-        account_type: "volunteer",
-        name: "",
-        email: "",
-        password: ""
-      });
+      handleSuccess(res.data.message);
+      // Redirect to login page after successful registration
+      navigate('/login');
 
     } catch (error) {
-
-      console.error(error);
-
-      alert(
-        error.response?.data?.message ||
-        "Registration failed"
-      );
+      handleError(error.response?.data?.message || "Registration failed");
     }
   };
 

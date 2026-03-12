@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Mail, Lock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+import { handleSuccess, handleError } from "../utils";
 
 export default function Login() {
   const { login } = useAuth();
@@ -24,11 +26,12 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/auth/login",
+        `${API_URL}/api/auth/login`,
         formData
       );
 
-      alert(res.data.message);
+      handleSuccess(res.data.message);
+
 
       // Create user object with role and name
       const userData = {
@@ -57,10 +60,8 @@ export default function Login() {
       }
 
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-        "Login failed"
-      );
+      const errorMessage = error.response?.data?.message || "Login failed";
+      handleError(errorMessage);
     }
   };
 

@@ -19,7 +19,13 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+<<<<<<< HEAD
     "mysql2": "^3.19.1"
   },
   "description": ""
+=======
+    "mysql2": "^3.19.1",
+    "sequelize": "^6.37.8"
+  }
+>>>>>>> 71afbeb18e71470064c748a8d94f8d9d9730dc10
 }
