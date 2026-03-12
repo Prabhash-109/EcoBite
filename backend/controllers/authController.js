@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const connectDB = require("../config/db");
 
 const db = connectDB();
@@ -46,5 +47,55 @@ exports.registerUser = async (req, res) => {
     });
 
   }
+
+};
+
+// Login 
+exports.loginUser = (req, res) => {
+
+  const { email, password } = req.body;
+
+  const query = "SELECT * FROM users WHERE email = ?";
+
+  db.query(query, [email], async (err, results) => {
+
+    if (err) {
+      return res.status(500).json({
+        message: "Database error"
+      });
+    }
+
+    if (results.length === 0) {
+      return res.status(400).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    const user = results[0];
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    // create token
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+  res.json({
+  message: "Login successful",
+  token,
+  id: user.id,
+  role: user.account_type,
+  name: user.name
+});
+
+  });
 
 };
