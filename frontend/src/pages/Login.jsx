@@ -62,6 +62,8 @@ export default function Login() {
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Login failed";
       handleError(errorMessage);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
