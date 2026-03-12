@@ -57,10 +57,13 @@ export default function Login() {
       }
 
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-        "Login failed"
-      );
+      const errorMessage = error.response?.data?.message || "Login failed";
+      alert(errorMessage);
+      
+      // Redirect to register page after unsuccessful login
+      setTimeout(() => {
+        navigate('/register');
+      }, 1500); // Wait 1.5 seconds to show the message before redirecting
     }
   };
 

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Mail, Lock, User, Briefcase } from 'lucide-react';
 
 export default function Register() {
-
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     account_type: "volunteer",
     name: "",
@@ -23,23 +23,17 @@ export default function Register() {
     e.preventDefault();
 
     try {
-
       const res = await axios.post(
         "http://localhost:3000/api/auth/register",
         formData
       );
 
       alert(res.data.message);
-
-      setFormData({
-        account_type: "volunteer",
-        name: "",
-        email: "",
-        password: ""
-      });
+      
+      // Redirect to login page after successful registration
+      navigate('/login');
 
     } catch (error) {
-
       console.error(error);
 
       alert(
