@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Mail, Lock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+import { handleSuccess, handleError } from "../utils";
 
 export default function Login() {
   const { login } = useAuth();
@@ -24,11 +26,12 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/auth/login",
+        `${API_URL}/api/auth/login`,
         formData
       );
 
-      alert(res.data.message);
+      handleSuccess(res.data.message);
+
 
       // Create user object with role and name
       const userData = {
@@ -58,14 +61,7 @@ export default function Login() {
 
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Login failed";
-      alert(errorMessage);
-      
-      // Redirect to register page after unsuccessful login
-      setTimeout(() => {
-        navigate('/register');
-      }, 1500); // Wait 1.5 seconds to show the message before redirecting
-    }
-  };
+      handleError(errorMessage);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
