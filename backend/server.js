@@ -14,8 +14,7 @@ app.use(express.json());
 // Connect to DB
 connectDB();
 
-// Auto-create tables based on models
-sequelize.sync({ alter: true }) // alter: true will update tables to match models
+sequelize.sync({ alter: true }) 
   .then(() => {
     console.log('All tables synced successfully!');
   })
