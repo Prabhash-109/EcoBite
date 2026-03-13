@@ -48,15 +48,15 @@ export default function RestaurantDashboard() {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'available':
-        return <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-bold tracking-wide">AVAILABLE</span>;
+        return <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-xs font-bold tracking-wide">AVAILABLE</span>;
       case 'claimed':
-        return <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-bold tracking-wide">CLAIMED</span>;
+        return <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-xs font-bold tracking-wide">CLAIMED</span>;
       case 'picked_up':
-        return <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold tracking-wide">PICKED UP</span>;
+        return <span className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-xs font-bold tracking-wide">PICKED UP</span>;
       case 'expired':
-        return <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold tracking-wide">EXPIRED</span>;
+        return <span className="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-xs font-bold tracking-wide">EXPIRED</span>;
       default:
-        return <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold tracking-wide">UNKNOWN</span>;
+        return <span className="bg-white/10 text-gray-400 border border-white/20 px-3 py-1 rounded-full text-xs font-bold tracking-wide">UNKNOWN</span>;
     }
   };
 
@@ -79,68 +79,75 @@ export default function RestaurantDashboard() {
   };
 
   const statsData = [
-    { label: "Active Listings", value: stats.active.toString(), icon: <Package className="text-blue-500" /> },
-    { label: "Pending Pickups", value: stats.pending.toString(), icon: <Clock className="text-orange-500" /> },
-    { label: "Total Donations", value: stats.total.toString(), icon: <CheckCircle className="text-green-500" /> },
+    { label: "Active Listings", value: stats.active.toString(), icon: <Package className="text-blue-400" /> },
+    { label: "Pending Pickups", value: stats.pending.toString(), icon: <Clock className="text-orange-400" /> },
+    { label: "Total Donations", value: stats.total.toString(), icon: <CheckCircle className="text-green-400" /> },
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <div className="flex justify-between items-end mb-10">
-        <div>
-          <h1 className="text-4xl font-black text-gray-900">Restaurant Portal</h1>
-          <p className="text-gray-500 text-lg">Manage your surplus and track your impact.</p>
-        </div>
-        <Link to="/add-food" className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-green-700 transition">
-          <Plus size={20} /> List New Food
-        </Link>
-      </div>
+    <div className="min-h-screen relative overflow-hidden text-white bg-[#050505] pt-32 pb-12">
+      
+      {/* Background Glows */}
+      <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-green-500/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+      <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-emerald-900/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-12">
-        {statsData.map((stat, i) => (
-          <div key={i} className="p-6 bg-white border border-gray-100 rounded-3xl shadow-sm">
-            <div className="mb-4">{stat.icon}</div>
-            <div className="text-3xl font-black text-gray-900">{stat.value}</div>
-            <div className="text-gray-500 font-medium">{stat.label}</div>
+      <div className="max-w-6xl mx-auto px-6 relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
+          <div>
+            <h1 className="text-4xl font-black text-white">Restaurant Portal</h1>
+            <p className="text-gray-400 text-lg">Manage your surplus and track your impact.</p>
           </div>
-        ))}
-      </div>
+          <Link to="/add-food" className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-2xl font-bold hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:-translate-y-1">
+            <Plus size={20} /> List New Food
+          </Link>
+        </div>
 
-      <h2 className="text-2xl font-bold mb-6">Recent Activity</h2>
-      <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th className="p-4 font-bold text-gray-600">Food Item</th>
-              <th className="p-4 font-bold text-gray-600">Quantity</th>
-              <th className="p-4 font-bold text-gray-600">Status</th>
-              <th className="p-4 font-bold text-gray-600">Expiry</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {foods.length === 0 ? (
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          {statsData.map((stat, i) => (
+            <div key={i} className="p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl transition-all hover:-translate-y-1 hover:bg-white/10">
+              <div className="mb-4">{stat.icon}</div>
+              <div className="text-3xl font-black text-white">{stat.value}</div>
+              <div className="text-gray-400 font-medium">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <h2 className="text-2xl font-bold mb-6 text-white">Recent Activity</h2>
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+          <table className="w-full text-left">
+            <thead className="bg-white/5 border-b border-white/10">
               <tr>
-                <td colSpan="4" className="p-8 text-center text-gray-500">
-                  No food donations yet. Click "List New Food" to get started!
-                </td>
+                <th className="p-4 font-bold text-gray-400">Food Item</th>
+                <th className="p-4 font-bold text-gray-400">Quantity</th>
+                <th className="p-4 font-bold text-gray-400">Status</th>
+                <th className="p-4 font-bold text-gray-400">Expiry</th>
               </tr>
-            ) : (
-              foods.slice(0, 10).map((food) => (
-                <tr key={food.id}>
-                  <td className="p-4 font-medium">{food.foodName}</td>
-                  <td className="p-4 text-gray-500">{food.quantity}</td>
-                  <td className="p-4">{getStatusBadge(food.status)}</td>
-                  <td className="p-4 text-gray-500">
-                    {food.status === 'picked_up' || food.status === 'expired' 
-                      ? 'Completed' 
-                      : formatTimeLeft(food.expiryDate)
-                    }
+            </thead>
+            <tbody className="divide-y divide-white/10">
+              {foods.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="p-8 text-center text-gray-500 font-medium">
+                    No food donations yet. Click "List New Food" to get started!
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                foods.slice(0, 10).map((food) => (
+                  <tr key={food.id} className="hover:bg-white/5 transition-colors">
+                    <td className="p-4 font-bold text-white">{food.foodName}</td>
+                    <td className="p-4 text-gray-400 font-medium">{food.quantity}</td>
+                    <td className="p-4">{getStatusBadge(food.status)}</td>
+                    <td className="p-4 text-gray-400 font-medium">
+                      {food.status === 'picked_up' || food.status === 'expired' 
+                        ? 'Completed' 
+                        : formatTimeLeft(food.expiryDate)
+                      }
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

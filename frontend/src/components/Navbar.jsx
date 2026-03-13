@@ -17,8 +17,8 @@ export default function Navbar() {
       // Not logged in - show Home and Login
       return (
         <>
-          <Link to="/" className="hover:text-green-600 transition">Home</Link>
-          <Link to="/register" className="bg-green-600 text-white px-6 py-3 rounded-2xl hover:bg-green-700 transition shadow-sm shadow-green-100">
+          <Link to="/" className="text-white/70 hover:text-white font-medium transition-colors">Home</Link>
+          <Link to="/register" className="bg-white text-black px-6 py-2.5 rounded-full font-bold text-sm hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:scale-105 transform duration-200">
             Join Us
           </Link>
         </>
@@ -26,20 +26,21 @@ export default function Navbar() {
     }
 
     // Logged in - show based on user role
-    const commonLinks = <Link to="/" className="hover:text-green-600 transition">Home</Link>;
+    const commonLinks = <Link to="/" className="text-white/70 hover:text-white font-medium transition-colors">Home</Link>;
 
     switch (user?.account_type) {
       case 'restaurant':
         return (
           <>
             {commonLinks}
-            <Link to="/restaurant-dashboard" className="hover:text-green-600 transition">Restaurant Portal</Link>
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              <span className="text-gray-600">{user.name}</span>
+            <Link to="/restaurant-dashboard" className="text-white/70 hover:text-white font-medium transition-colors">Restaurant Portal</Link>
+            <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
+              <User className="w-4 h-4 text-green-400" />
+              <span className="text-white/90 font-medium text-sm">{user.name}</span>
+              <div className="w-px h-4 bg-white/20"></div> {/* Visual Divider */}
               <button 
                 onClick={handleLogout}
-                className="flex items-center gap-1 text-red-600 hover:text-red-700 transition"
+                className="flex items-center gap-1.5 text-red-400 hover:text-red-300 transition-colors font-medium text-sm"
               >
                 <LogOut className="w-4 h-4" />
                 Logout
@@ -52,13 +53,14 @@ export default function Navbar() {
         return (
           <>
             {commonLinks}
-            <Link to="/restaurants" className="hover:text-green-600 transition">Partners</Link>
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              <span className="text-gray-600">{user.name}</span>
+            <Link to="/restaurants" className="text-white/70 hover:text-white font-medium transition-colors">Partners</Link>
+            <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
+              <User className="w-4 h-4 text-green-400" />
+              <span className="text-white/90 font-medium text-sm">{user.name}</span>
+              <div className="w-px h-4 bg-white/20"></div> {/* Visual Divider */}
               <button 
                 onClick={handleLogout}
-                className="flex items-center gap-1 text-red-600 hover:text-red-700 transition"
+                className="flex items-center gap-1.5 text-red-400 hover:text-red-300 transition-colors font-medium text-sm"
               >
                 <LogOut className="w-4 h-4" />
                 Logout
@@ -71,13 +73,14 @@ export default function Navbar() {
         return (
           <>
             {commonLinks}
-            <Link to="/volunteer-dashboard" className="hover:text-green-600 transition">Volunteer Hub</Link>
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              <span className="text-gray-600">{user.name}</span>
+            <Link to="/volunteer-dashboard" className="text-white/70 hover:text-white font-medium transition-colors">Volunteer Hub</Link>
+            <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
+              <User className="w-4 h-4 text-green-400" />
+              <span className="text-white/90 font-medium text-sm">{user.name}</span>
+              <div className="w-px h-4 bg-white/20"></div> {/* Visual Divider */}
               <button 
                 onClick={handleLogout}
-                className="flex items-center gap-1 text-red-600 hover:text-red-700 transition"
+                className="flex items-center gap-1.5 text-red-400 hover:text-red-300 transition-colors font-medium text-sm"
               >
                 <LogOut className="w-4 h-4" />
                 Logout
@@ -90,12 +93,13 @@ export default function Navbar() {
         return (
           <>
             {commonLinks}
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              <span className="text-gray-600">{user.name}</span>
+            <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
+              <User className="w-4 h-4 text-green-400" />
+              <span className="text-white/90 font-medium text-sm">{user.name}</span>
+              <div className="w-px h-4 bg-white/20"></div> {/* Visual Divider */}
               <button 
                 onClick={handleLogout}
-                className="flex items-center gap-1 text-red-600 hover:text-red-700 transition"
+                className="flex items-center gap-1.5 text-red-400 hover:text-red-300 transition-colors font-medium text-sm"
               >
                 <LogOut className="w-4 h-4" />
                 Logout
@@ -107,14 +111,17 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex justify-between items-center px-8 py-4 bg-white border-b border-gray-100 sticky top-0 z-50">
-      <Link to="/" className="flex items-center gap-2 text-green-600 font-black text-2xl tracking-tight">
-        <Leaf strokeWidth={3} /> EcoBite
-      </Link>
-      
-      <div className="flex items-center gap-8 font-bold text-gray-400 text-sm">
-        {renderNavLinks()}
-      </div>
-    </nav>
+    // Floating Island Container
+    <div className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl z-50">
+      <nav className="flex justify-between items-center px-6 py-3 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+        <Link to="/" className="flex items-center gap-2 text-white font-black text-xl tracking-tight">
+          <Leaf className="text-green-500" strokeWidth={3} size={24} /> EcoBite
+        </Link>
+        
+        <div className="flex items-center gap-6">
+          {renderNavLinks()}
+        </div>
+      </nav>
+    </div>
   );
 }
