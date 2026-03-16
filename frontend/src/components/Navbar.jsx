@@ -55,7 +55,9 @@ export default function Navbar() {
         return (
           <>
             {commonLinks}
-            <Link to="/restaurants" className="text-white/70 hover:text-white font-medium transition-colors">Partners</Link>
+            <Link to="/restaurants" className="text-white/70 hover:text-white font-medium transition-colors">Food Near You</Link>
+            <Link to="/manage-deliveries" className="text-white/70 hover:text-white font-medium transition-colors">Manage Deliveries</Link>
+            <Link to="/ngo-dashboard" className="text-white/70 hover:text-white font-medium transition-colors">Dashboard</Link>
             <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
               <User className="w-4 h-4 text-green-400" />
               <span className="text-white/90 font-medium text-sm">{user.name}</span>
