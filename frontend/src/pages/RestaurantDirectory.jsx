@@ -1,30 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Navigation, Package, Search, PlusCircle, MessageSquare, Send, X, Building2 } from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { handleSuccess, handleError } from '../utils';
+
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
 export default function FindFood() {
+  const { user } = useAuth();
   const [radius, setRadius] = useState(5);
+  const [availableFood, setAvailableFood] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Added 'messages' array to each food item so we can track the chat history
-  const [availableFood, setAvailableFood] = useState([
-    { 
-      id: 1, restaurant: "Fresh Bakes", item: "Assorted Pastries (15)", distance: "1.2 km", category: "Bakery", timeListed: "20 mins ago",
-      messages: [
-        { sender: "restaurant", text: "Hi there! These pastries were just boxed up and are ready to go.", time: "10:00 AM" }
-      ]
-    },
-    { 
-      id: 2, restaurant: "Urban Grill", item: "Grilled Chicken & Rice (10 Meals)", distance: "3.5 km", category: "Prepared Food", timeListed: "1 hour ago",
-      messages: []
-    },
-    { 
-      id: 3, restaurant: "Pasta House", item: "Garlic Bread & Pasta (4kg)", distance: "4.8 km", category: "Prepared Food", timeListed: "15 mins ago",
-      messages: []
-    },
-    { 
-      id: 4, restaurant: "Green Grocers", item: "Ripe Bananas & Apples (10kg)", distance: "8.0 km", category: "Produce", timeListed: "2 hours ago",
-      messages: []
-    },
-  ]);
+  useEffect(() => {
+    fetchAvailableFoods();
+  }, []);
+
+  const fetchAvailableFoods = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(
+        `${API_URL}/api/food/available`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      // Transform the data to match the expected structure
+      const transformedData = res.data.map(food => ({
+        id: food.id,
+        restaurant: food.restaurant?.name || 'Restaurant',
+        item: `${food.foodName} (${food.quantity})`,
+        distance: `${(Math.random() * 10 + 1).toFixed(1)} km`, // Mock distance for now
+        category: food.category,
+        timeListed: getTimeAgo(food.createdAt),
+        messages: []
+      }));
+
+      setAvailableFood(transformedData);
+    } catch (error) {
+      handleError('Failed to fetch available foods');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    
+    const minutes = Math.floor(diffMs / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (minutes > 0) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+    return 'Just now';
+  };
 
   const [activeChat, setActiveChat] = useState(null);
   const [newMessage, setNewMessage] = useState("");
@@ -97,7 +133,12 @@ export default function FindFood() {
 
         {/* Food Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredFood.length > 0 ? (
+          {loading ? (
+            <div className="md:col-span-2 lg:col-span-3 text-center py-20 bg-white/5 backdrop-blur-xl border border-white/10 border-dashed rounded-[2rem]">
+               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-r-2 border-white/20 border-t-blue-500 border-l-blue-500 mx-auto mb-4"></div>
+               <p className="text-gray-400">Loading available food...</p>
+            </div>
+          ) : filteredFood.length > 0 ? (
             filteredFood.map((food) => (
               <div key={food.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl flex flex-col group hover:-translate-y-1 hover:bg-white/10 hover:border-blue-500/50 transition-all relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[50px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
