@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Package, Clock, CheckCircle } from 'lucide-react';
+import { Plus, Package, Clock, CheckCircle, MessageSquare, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -92,62 +92,82 @@ export default function RestaurantDashboard() {
       <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-emerald-900/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
-          <div>
-            <h1 className="text-4xl font-black text-white">Restaurant Portal</h1>
-            <p className="text-gray-400 text-lg">Manage your surplus and track your impact.</p>
-          </div>
-          <Link to="/add-food" className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-2xl font-bold hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:-translate-y-1">
-            <Plus size={20} /> List New Food
+        
+        {/* 1. WELCOME & ALERT BAR */}
+        <div className="mb-10">
+          <h1 className="text-4xl font-black text-white mb-2">Welcome back, {user?.name || "Partner"}</h1>
+          <p className="text-gray-400 text-lg mb-6">Here is your daily surplus snapshot.</p>
+          
+          {/* Urgent Alert Banner (Only showing if there are pending pickups for demo purposes) */}
+          {stats.pending > 0 && (
+            <div className="bg-orange-500/10 backdrop-blur-md border border-orange-500/20 p-4 rounded-2xl flex items-center gap-3 text-orange-400 shadow-lg">
+              <AlertTriangle size={20} />
+              <span className="font-medium text-sm">Action Needed: You have <strong>{stats.pending} claimed</strong> order(s) awaiting pickup.</span>
+            </div>
+          )}
+        </div>
+
+        {/* 2. QUICK ACTION TRIGGERS */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-10">
+          <Link to="/add-food" className="flex-1 flex items-center justify-center gap-2 bg-white text-black py-4 rounded-2xl font-black text-lg hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:-translate-y-1">
+            <Plus size={22} /> List New Surplus
+          </Link>
+          <Link to="/ngo-requests" className="flex-1 flex items-center justify-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 text-white py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all shadow-sm hover:-translate-y-1">
+            <MessageSquare size={22} /> View NGO Requests 
           </Link>
         </div>
 
+        {/* 3. STATS */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           {statsData.map((stat, i) => (
-            <div key={i} className="p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl transition-all hover:-translate-y-1 hover:bg-white/10">
-              <div className="mb-4">{stat.icon}</div>
+            <div key={i} className="p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl transition-all hover:-translate-y-1 hover:bg-white/10 group">
+              <div className="mb-4 group-hover:scale-110 transition-transform">{stat.icon}</div>
               <div className="text-3xl font-black text-white">{stat.value}</div>
               <div className="text-gray-400 font-medium">{stat.label}</div>
             </div>
           ))}
         </div>
 
-        <h2 className="text-2xl font-bold mb-6 text-white">Recent Activity</h2>
+        {/* 4. ACTIVITY TABLE */}
+        <h2 className="text-2xl font-bold mb-6 text-white">Live Kitchen Activity</h2>
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-          <table className="w-full text-left">
-            <thead className="bg-white/5 border-b border-white/10">
-              <tr>
-                <th className="p-4 font-bold text-gray-400">Food Item</th>
-                <th className="p-4 font-bold text-gray-400">Quantity</th>
-                <th className="p-4 font-bold text-gray-400">Status</th>
-                <th className="p-4 font-bold text-gray-400">Expiry</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {foods.length === 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left whitespace-nowrap">
+              <thead className="bg-white/5 border-b border-white/10">
                 <tr>
-                  <td colSpan="4" className="p-8 text-center text-gray-500 font-medium">
-                    No food donations yet. Click "List New Food" to get started!
-                  </td>
+                  <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Food Item</th>
+                  <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Quantity</th>
+                  <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Status</th>
+                  <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Expiry</th>
                 </tr>
-              ) : (
-                foods.slice(0, 10).map((food) => (
-                  <tr key={food.id} className="hover:bg-white/5 transition-colors">
-                    <td className="p-4 font-bold text-white">{food.foodName}</td>
-                    <td className="p-4 text-gray-400 font-medium">{food.quantity}</td>
-                    <td className="p-4">{getStatusBadge(food.status)}</td>
-                    <td className="p-4 text-gray-400 font-medium">
-                      {food.status === 'picked_up' || food.status === 'expired' 
-                        ? 'Completed' 
-                        : formatTimeLeft(food.expiryDate)
-                      }
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {foods.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="p-8 text-center text-gray-500 font-medium">
+                      No food donations yet. Click "List New Surplus" to get started!
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  foods.slice(0, 10).map((food) => (
+                    <tr key={food.id} className="hover:bg-white/5 transition-colors">
+                      <td className="p-5 font-bold text-white">{food.foodName}</td>
+                      <td className="p-5 text-gray-400 font-medium">{food.quantity}</td>
+                      <td className="p-5">{getStatusBadge(food.status)}</td>
+                      <td className="p-5 text-gray-400 font-medium text-sm">
+                        {food.status === 'picked_up' || food.status === 'expired' 
+                          ? 'Completed' 
+                          : formatTimeLeft(food.expiryDate)
+                        }
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
+
       </div>
     </div>
   );

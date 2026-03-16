@@ -33,7 +33,9 @@ export default function Navbar() {
         return (
           <>
             {commonLinks}
-            <Link to="/restaurant-dashboard" className="text-white/70 hover:text-white font-medium transition-colors">Restaurant Portal</Link>
+            <Link to="/ngo-requests" className="text-white/70 hover:text-white font-medium transition-colors">Requests</Link>
+            <Link to="/food-listings" className="text-white/70 hover:text-white font-medium transition-colors">Food Listings</Link>
+            <Link to="/restaurant-dashboard" className="text-white/70 hover:text-white font-medium transition-colors">Dashboard</Link>
             <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
               <User className="w-4 h-4 text-green-400" />
               <span className="text-white/90 font-medium text-sm">{user.name}</span>
