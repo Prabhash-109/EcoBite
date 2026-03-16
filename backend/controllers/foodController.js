@@ -106,9 +106,36 @@ exports.claimFood = async (req, res) => {
   }
 };
 
+// Delete food donation
+exports.deleteFood = async (req, res) => {
+  try {
+    const { foodId } = req.params;
+    
+    const food = await Food.findByPk(foodId);
+    if (!food) {
+      return res.status(404).json({ message: 'Food not found' });
+    }
+
+    // Check if the food belongs to the current user (restaurant)
+    if (food.restaurantId !== req.user.id) {
+      return res.status(403).json({ message: 'You can only delete your own food listings' });
+    }
+
+    await food.destroy();
+
+    res.json({
+      message: 'Food donation deleted successfully'
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createFood: [verifyToken, exports.createFood],
   getRestaurantFoods: [verifyToken, exports.getRestaurantFoods],
   getAvailableFoods: [verifyToken, exports.getAvailableFoods],
-  claimFood: [verifyToken, exports.claimFood]
+  claimFood: [verifyToken, exports.claimFood],
+  deleteFood: [verifyToken, exports.deleteFood]
 };

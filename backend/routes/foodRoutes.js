@@ -4,7 +4,8 @@ const {
   createFood,
   getRestaurantFoods,
   getAvailableFoods,
-  claimFood
+  claimFood,
+  deleteFood
 } = require('../controllers/foodController');
 
 // Create new food donation
@@ -18,5 +19,8 @@ router.get('/available', getAvailableFoods);
 
 // Claim a food donation
 router.patch('/claim/:foodId', claimFood);
+
+// Delete a food donation
+router.delete('/:foodId', deleteFood);
 
 module.exports = router;
