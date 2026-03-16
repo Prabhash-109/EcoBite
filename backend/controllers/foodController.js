@@ -106,6 +106,21 @@ exports.claimFood = async (req, res) => {
   }
 };
 
+// Get all food assignments for a volunteer (claimed by current user)
+exports.getVolunteerAssignments = async (req, res) => {
+  try {
+    const foods = await Food.findAll({
+      where: { claimedBy: req.user.id },
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json(foods);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Delete food donation
 exports.deleteFood = async (req, res) => {
   try {
@@ -137,5 +152,6 @@ module.exports = {
   getRestaurantFoods: [verifyToken, exports.getRestaurantFoods],
   getAvailableFoods: [verifyToken, exports.getAvailableFoods],
   claimFood: [verifyToken, exports.claimFood],
+  getVolunteerAssignments: [verifyToken, exports.getVolunteerAssignments],
   deleteFood: [verifyToken, exports.deleteFood]
 };

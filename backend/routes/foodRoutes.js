@@ -5,6 +5,7 @@ const {
   getRestaurantFoods,
   getAvailableFoods,
   claimFood,
+  getVolunteerAssignments,
   deleteFood
 } = require('../controllers/foodController');
 
@@ -13,6 +14,9 @@ router.post('/donate', createFood);
 
 // Get restaurant's food donations
 router.get('/my-donations', getRestaurantFoods);
+
+// Get volunteer's assigned donations
+router.get('/my-assignments', getVolunteerAssignments);
 
 // Get all available food donations
 router.get('/available', getAvailableFoods);
