@@ -32,9 +32,6 @@ export default function Home() {
           <Link to="/register" className="w-full sm:w-auto px-8 py-4 bg-white text-black rounded-full font-black text-lg hover:bg-gray-200 transition-all flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:-translate-y-1">
             Get Started <ArrowRight size={20} />
           </Link>
-          <Link to="/restaurants" className="w-full sm:w-auto px-8 py-4 bg-white/5 backdrop-blur-md text-white rounded-full font-bold text-lg hover:bg-white/10 border border-white/10 transition-all flex items-center justify-center gap-2 hover:-translate-y-1 shadow-sm">
-            View Partners
-          </Link>
         </div>
       </section>
 
