@@ -1,48 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Package, Clock, Trash2, Edit3, Tag } from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { handleSuccess, handleError } from '../utils';
+
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
 export default function FoodListings() {
-  // Dummy data for demonstration
-  const [listings, setListings] = useState([
-    {
-      id: 1,
-      foodName: "Mixed Vegetable Curry",
-      quantity: "5kg",
-      category: "Prepared Food",
-      expiryDate: "Today, 10:00 PM",
-      status: "available"
-    },
-    {
-      id: 2,
-      foodName: "Fresh Bread Rolls",
-      quantity: "20 pieces",
-      category: "Bakery",
-      expiryDate: "Today, 11:30 PM",
-      status: "claimed"
-    },
-    {
-      id: 3,
-      foodName: "Steamed Rice",
-      quantity: "3kg",
-      category: "Prepared Food",
-      expiryDate: "Tomorrow, 2:00 PM",
-      status: "available"
-    },
-    {
-      id: 4,
-      foodName: "Assorted Pastries",
-      quantity: "12 pieces",
-      category: "Bakery",
-      expiryDate: "Yesterday, 8:00 PM",
-      status: "expired"
-    }
-  ]);
+  const { user } = useAuth();
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this listing?")) {
-      setListings(listings.filter(item => item.id !== id));
+  useEffect(() => {
+    fetchFoodListings();
+  }, []);
+
+  const fetchFoodListings = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(
+        `${API_URL}/api/food/my-donations`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      setListings(res.data);
+    } catch (error) {
+      handleError('Failed to fetch food listings');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this listing?")) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(
+          `${API_URL}/api/food/${id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        handleSuccess('Food listing deleted successfully');
+        setListings(listings.filter(item => item.id !== id));
+      } catch (error) {
+        handleError('Failed to delete food listing');
+      }
+    }
+  };
+
+  const formatExpiryDate = (expiryDate) => {
+    const expiry = new Date(expiryDate);
+    const now = new Date();
+    const diff = expiry - now;
+    
+    if (diff <= 0) return 'Expired';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 24) {
+      const days = Math.floor(hours / 24);
+      return `${days} day${days > 1 ? 's' : ''} left`;
+    }
+    
+    return `${hours}h ${minutes}m left`;
   };
 
   const getStatusBadge = (status) => {
@@ -132,7 +162,7 @@ export default function FoodListings() {
                     <Clock size={14} className="text-orange-400" />
                   </div>
                   <span className={item.status === 'expired' ? 'text-red-400' : ''}>
-                    {item.status === 'expired' ? `Expired ${item.expiryDate}` : `Expires: ${item.expiryDate}`}
+                    {item.status === 'expired' ? 'Expired' : formatExpiryDate(item.expiryDate)}
                   </span>
                 </div>
               </div>
@@ -146,12 +176,6 @@ export default function FoodListings() {
               <Package className="mx-auto text-gray-600 mb-4" size={48} />
               <h3 className="text-xl font-bold text-white mb-2">No active listings</h3>
               <p className="text-gray-400 mb-6">You don't have any food listed right now.</p>
-              <Link 
-                to="/add-food" 
-                className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-gray-200 transition-all"
-              >
-                <Plus size={18} /> Add Your First Item
-              </Link>
             </div>
           )}
 

@@ -16,15 +16,6 @@ export default function RestaurantDashboard() {
     total: 0
   });
 
-  // Dummy data for the new "All-Time Requested Orders" table
-  // You will eventually replace this with a new axios call (e.g., fetchRequests)
-  const [orderRequests] = useState([
-    { id: 101, foodName: "Mixed Veg Curry (5kg)", ngoName: "City Mission Shelter", status: "completed", date: "Oct 24, 2023" },
-    { id: 102, foodName: "Fresh Bread Rolls (20)", ngoName: "Feeding India", status: "pending", date: "Today, 10:30 AM" },
-    { id: 103, foodName: "Assorted Pastries (12)", ngoName: "Hope Foundation", status: "accepted", date: "Today, 9:15 AM" },
-    { id: 104, foodName: "Steamed Rice (3kg)", ngoName: "City Mission Shelter", status: "completed", date: "Oct 22, 2023" },
-  ]);
-
   useEffect(() => {
     fetchRestaurantFoods();
   }, []);
@@ -56,12 +47,14 @@ export default function RestaurantDashboard() {
 
   const getRequestStatusBadge = (status) => {
     switch (status) {
-      case 'pending':
-        return <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Pending Review</span>;
-      case 'accepted':
-        return <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Accepted / Waiting</span>;
-      case 'completed':
+      case 'available':
+        return <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Available</span>;
+      case 'claimed':
+        return <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Claimed</span>;
+      case 'picked_up':
         return <span className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Picked Up</span>;
+      case 'expired':
+        return <span className="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Expired</span>;
       default:
         return <span className="bg-white/10 text-gray-400 border border-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Unknown</span>;
     }
@@ -116,7 +109,7 @@ export default function RestaurantDashboard() {
           ))}
         </div>
 
-        {/* 4. ALL-TIME REQUESTED ORDERS TABLE */}
+        {/* 4. YOUR ACTIVITY TABLE */}
         <h2 className="text-2xl font-bold mb-6 text-white">Your Activity</h2>
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
@@ -124,25 +117,31 @@ export default function RestaurantDashboard() {
               <thead className="bg-white/5 border-b border-white/10">
                 <tr>
                   <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Food Item</th>
-                  <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Requested By (NGO)</th>
+                  <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Quantity</th>
                   <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Date</th>
                   <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
-                {orderRequests.length === 0 ? (
+                {foods.length === 0 ? (
                   <tr>
                     <td colSpan="4" className="p-8 text-center text-gray-500 font-medium">
-                      No requests have been made yet.
+                      No food donations yet. Click "List New Surplus" to get started!
                     </td>
                   </tr>
                 ) : (
-                  orderRequests.map((request) => (
-                    <tr key={request.id} className="hover:bg-white/5 transition-colors">
-                      <td className="p-5 font-bold text-white">{request.foodName}</td>
-                      <td className="p-5 text-gray-400 font-medium">{request.ngoName}</td>
-                      <td className="p-5 text-gray-400 font-medium text-sm">{request.date}</td>
-                      <td className="p-5">{getRequestStatusBadge(request.status)}</td>
+                  foods.slice(0, 10).map((food) => (
+                    <tr key={food.id} className="hover:bg-white/5 transition-colors">
+                      <td className="p-5 font-bold text-white">{food.foodName}</td>
+                      <td className="p-5 text-gray-400 font-medium">{food.quantity}</td>
+                      <td className="p-5 text-gray-400 font-medium text-sm">
+                        {new Date(food.createdAt).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
+                      </td>
+                      <td className="p-5">{getRequestStatusBadge(food.status)}</td>
                     </tr>
                   ))
                 )}
