@@ -15,6 +15,8 @@ import AddFood from './pages/AddFood';
 import VolunteerDashboard from './pages/VolunteerDashboard';
 import FoodListings from './pages/FoodListings';
 import RestaurantDirectory from './pages/RestaurantDirectory';
+import ManageDeliveries from './pages/ManageDelivery';
+import NgoDashboard from './pages/NgoDashboard';
 
 
 function App() {
@@ -34,6 +36,8 @@ function App() {
           <Route path="/ngo-requests" element={<NgoRequests />} />
           <Route path="/volunteer-dashboard" element={<VolunteerDashboard />} />
           <Route path="/food-listings" element={<FoodListings />} />
+          <Route path="/manage-deliveries" element={<ManageDeliveries />} />
+          <Route path="/ngo-dashboard" element={<NgoDashboard />} />
           
         </Routes>
       </Router>
