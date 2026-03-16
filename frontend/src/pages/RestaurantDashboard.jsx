@@ -16,6 +16,15 @@ export default function RestaurantDashboard() {
     total: 0
   });
 
+  // Dummy data for the new "All-Time Requested Orders" table
+  // You will eventually replace this with a new axios call (e.g., fetchRequests)
+  const [orderRequests] = useState([
+    { id: 101, foodName: "Mixed Veg Curry (5kg)", ngoName: "City Mission Shelter", status: "completed", date: "Oct 24, 2023" },
+    { id: 102, foodName: "Fresh Bread Rolls (20)", ngoName: "Feeding India", status: "pending", date: "Today, 10:30 AM" },
+    { id: 103, foodName: "Assorted Pastries (12)", ngoName: "Hope Foundation", status: "accepted", date: "Today, 9:15 AM" },
+    { id: 104, foodName: "Steamed Rice (3kg)", ngoName: "City Mission Shelter", status: "completed", date: "Oct 22, 2023" },
+  ]);
+
   useEffect(() => {
     fetchRestaurantFoods();
   }, []);
@@ -34,7 +43,7 @@ export default function RestaurantDashboard() {
 
       setFoods(res.data);
       
-      // Calculate stats
+      // Calculate stats based on your active listings
       const active = res.data.filter(food => food.status === 'available').length;
       const pending = res.data.filter(food => food.status === 'claimed').length;
       const total = res.data.length;
@@ -45,37 +54,17 @@ export default function RestaurantDashboard() {
     }
   };
 
-  const getStatusBadge = (status) => {
+  const getRequestStatusBadge = (status) => {
     switch (status) {
-      case 'available':
-        return <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-xs font-bold tracking-wide">AVAILABLE</span>;
-      case 'claimed':
-        return <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-xs font-bold tracking-wide">CLAIMED</span>;
-      case 'picked_up':
-        return <span className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-xs font-bold tracking-wide">PICKED UP</span>;
-      case 'expired':
-        return <span className="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-xs font-bold tracking-wide">EXPIRED</span>;
+      case 'pending':
+        return <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Pending Review</span>;
+      case 'accepted':
+        return <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Accepted / Waiting</span>;
+      case 'completed':
+        return <span className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Picked Up</span>;
       default:
-        return <span className="bg-white/10 text-gray-400 border border-white/20 px-3 py-1 rounded-full text-xs font-bold tracking-wide">UNKNOWN</span>;
+        return <span className="bg-white/10 text-gray-400 border border-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Unknown</span>;
     }
-  };
-
-  const formatTimeLeft = (expiryDate) => {
-    const expiry = new Date(expiryDate);
-    const now = new Date();
-    const diff = expiry - now;
-    
-    if (diff <= 0) return 'Expired';
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (hours > 24) {
-      const days = Math.floor(hours / 24);
-      return `${days} day${days > 1 ? 's' : ''} left`;
-    }
-    
-    return `${hours}h ${minutes}m left`;
   };
 
   const statsData = [
@@ -98,7 +87,6 @@ export default function RestaurantDashboard() {
           <h1 className="text-4xl font-black text-white mb-2">Welcome back, {user?.name || "Partner"}</h1>
           <p className="text-gray-400 text-lg mb-6">Here is your daily surplus snapshot.</p>
           
-          {/* Urgent Alert Banner (Only showing if there are pending pickups for demo purposes) */}
           {stats.pending > 0 && (
             <div className="bg-orange-500/10 backdrop-blur-md border border-orange-500/20 p-4 rounded-2xl flex items-center gap-3 text-orange-400 shadow-lg">
               <AlertTriangle size={20} />
@@ -128,38 +116,33 @@ export default function RestaurantDashboard() {
           ))}
         </div>
 
-        {/* 4. ACTIVITY TABLE */}
-        <h2 className="text-2xl font-bold mb-6 text-white">Live Kitchen Activity</h2>
+        {/* 4. ALL-TIME REQUESTED ORDERS TABLE */}
+        <h2 className="text-2xl font-bold mb-6 text-white">Your Activity</h2>
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left whitespace-nowrap">
               <thead className="bg-white/5 border-b border-white/10">
                 <tr>
                   <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Food Item</th>
-                  <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Quantity</th>
+                  <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Requested By (NGO)</th>
+                  <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Date</th>
                   <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Status</th>
-                  <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Expiry</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
-                {foods.length === 0 ? (
+                {orderRequests.length === 0 ? (
                   <tr>
                     <td colSpan="4" className="p-8 text-center text-gray-500 font-medium">
-                      No food donations yet. Click "List New Surplus" to get started!
+                      No requests have been made yet.
                     </td>
                   </tr>
                 ) : (
-                  foods.slice(0, 10).map((food) => (
-                    <tr key={food.id} className="hover:bg-white/5 transition-colors">
-                      <td className="p-5 font-bold text-white">{food.foodName}</td>
-                      <td className="p-5 text-gray-400 font-medium">{food.quantity}</td>
-                      <td className="p-5">{getStatusBadge(food.status)}</td>
-                      <td className="p-5 text-gray-400 font-medium text-sm">
-                        {food.status === 'picked_up' || food.status === 'expired' 
-                          ? 'Completed' 
-                          : formatTimeLeft(food.expiryDate)
-                        }
-                      </td>
+                  orderRequests.map((request) => (
+                    <tr key={request.id} className="hover:bg-white/5 transition-colors">
+                      <td className="p-5 font-bold text-white">{request.foodName}</td>
+                      <td className="p-5 text-gray-400 font-medium">{request.ngoName}</td>
+                      <td className="p-5 text-gray-400 font-medium text-sm">{request.date}</td>
+                      <td className="p-5">{getRequestStatusBadge(request.status)}</td>
                     </tr>
                   ))
                 )}
