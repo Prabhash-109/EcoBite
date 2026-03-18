@@ -16,6 +16,19 @@ export default function FindFood() {
     fetchAvailableFoods();
   }, []);
 
+  // Keep NGO page in sync so "Requested" can turn to "Accepted"
+  useEffect(() => {
+    if (!user) return;
+    const role = user.account_type || user.role;
+    if (role !== 'ngo') return;
+
+    const interval = setInterval(() => {
+      fetchAvailableFoods();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [user]);
+
   const fetchAvailableFoods = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -36,7 +49,9 @@ export default function FindFood() {
         distance: null, // no fake data
         category: food.category,
         timeListed: getTimeAgo(food.createdAt),
-        messages: []
+        messages: [],
+        requestStatus: food.requestStatus || null,
+        requestId: food.requestId || null
       }));
 
       setAvailableFood(transformedData);
@@ -67,8 +82,25 @@ export default function FindFood() {
 
   const filteredFood = availableFood;
 
-  const handleRequest = (foodItem, restaurant) => {
-    alert(`Request sent to ${restaurant} for ${foodItem}! You will be notified when they accept.`);
+  const handleRequest = async (food) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(
+        `${API_URL}/api/requests`,
+        { foodId: food.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setAvailableFood((prev) =>
+        prev.map((f) =>
+          f.id === food.id
+            ? { ...f, requestStatus: res.data.status, requestId: res.data.id }
+            : f
+        )
+      );
+    } catch (error) {
+      handleError(error.response?.data?.message || 'Failed to send request');
+    }
   };
 
   const openChat = (food) => {
@@ -164,10 +196,17 @@ export default function FindFood() {
 
                 <div className="flex gap-3">
                   <button 
-                    onClick={() => handleRequest(food.item, food.restaurant)}
-                    className="flex-1 bg-white text-black py-3.5 rounded-xl font-black hover:bg-gray-200 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2"
+                    onClick={() => handleRequest(food)}
+                    disabled={food.requestStatus === 'pending' || food.requestStatus === 'accepted'}
+                    className={`flex-1 py-3.5 rounded-xl font-black transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2 ${
+                      food.requestStatus === 'accepted'
+                        ? 'bg-green-500 text-black cursor-not-allowed'
+                        : food.requestStatus === 'pending'
+                        ? 'bg-white/10 text-gray-300 border border-white/10 cursor-not-allowed'
+                        : 'bg-white text-black hover:bg-gray-200'
+                    }`}
                   >
-                    <PlusCircle size={18} /> Request
+                    <PlusCircle size={18} /> {food.requestStatus === 'accepted' ? 'Accepted' : food.requestStatus === 'pending' ? 'Requested' : 'Request'}
                   </button>
                   <button 
                     onClick={() => openChat(food)}
