@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Mail, Lock, User, Briefcase } from 'lucide-react';
+import { Mail, Lock, User, Briefcase, Phone} from 'lucide-react';
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 import { handleSuccess, handleError } from "../utils";
 
@@ -11,7 +11,8 @@ export default function Register() {
     account_type: "volunteer",
     name: "",
     email: "",
-    password: ""
+    password: "",
+    phoneNumber: ""
   });
 
   const handleChange = (e) => {
@@ -152,6 +153,31 @@ export default function Register() {
                 onChange={handleChange}
                 required
                 placeholder="••••••••"
+                className="w-full p-4 pl-12 bg-white/5 rounded-2xl border border-white/10 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 placeholder:text-gray-600 text-white transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Phone Number */}
+
+          <div className="flex flex-col gap-1">
+            <label className="font-bold text-sm text-gray-400 ml-1">
+              Phone Number
+            </label>
+
+            <div className="relative">
+              <Phone
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+                size={20}
+              />
+
+              <input
+                type="tel"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                required
+                placeholder="+91 123-456-7890"
                 className="w-full p-4 pl-12 bg-white/5 rounded-2xl border border-white/10 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 placeholder:text-gray-600 text-white transition-all"
               />
             </div>

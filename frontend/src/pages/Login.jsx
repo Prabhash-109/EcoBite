@@ -38,7 +38,8 @@ export default function Login() {
         id: res.data.id, // You might need to add this to your backend response
         name: res.data.name,
         email: formData.email,
-        account_type: res.data.role
+        account_type: res.data.role,
+        phoneNumber: res.data.phoneNumber
       };
 
       // Use auth context login method
