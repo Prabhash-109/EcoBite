@@ -17,6 +17,7 @@ import FoodListings from './pages/FoodListings';
 import RestaurantDirectory from './pages/RestaurantDirectory';
 import ManageDeliveries from './pages/ManageDelivery';
 import NgoDashboard from './pages/NgoDashboard';
+import About from './pages/About';
 
 
 function App() {
@@ -38,6 +39,8 @@ function App() {
           <Route path="/food-listings" element={<FoodListings />} />
           <Route path="/manage-deliveries" element={<ManageDeliveries />} />
           <Route path="/ngo-dashboard" element={<NgoDashboard />} />
+          <Route path="/about" element={<About />} />
+          
           
         </Routes>
       </Router>
