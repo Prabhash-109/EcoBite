@@ -1,39 +1,61 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Send, Building2, Clock, CheckCircle, Package, MessageSquare } from 'lucide-react';
+import axios from 'axios';
+import { handleError, handleSuccess } from '../utils';
+
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
 export default function NgoRequests() {
-  // Dummy Data for UI demonstration
-  const [requests, setRequests] = useState([
-    {
-      id: 1,
-      ngoName: "Feeding India (South Campus)",
-      foodItem: "Fresh Bread Rolls (20 pieces)",
-      requestTime: "10 mins ago",
-      status: "pending",
-      messages: [
-        { sender: "ngo", text: "Hi, we can pick up the bread rolls in about 30 minutes. Is that okay?", time: "10:05 PM" }
-      ]
-    },
-    {
-      id: 2,
-      ngoName: "City Mission Shelter",
-      foodItem: "Mixed Vegetable Curry (5kg)",
-      requestTime: "1 hour ago",
-      status: "accepted",
-      messages: [
-        { sender: "ngo", text: "Hello! We would love to claim the curry for tonight's dinner service.", time: "9:00 PM" },
-        { sender: "restaurant", text: "Perfect, it is packed and ready for you.", time: "9:15 PM" },
-        { sender: "ngo", text: "Our volunteer Rahul is on the way now!", time: "9:45 PM" }
-      ]
-    }
-  ]);
-
-  const [activeRequest, setActiveRequest] = useState(requests[0]);
+  const [requests, setRequests] = useState([]);
+  const [activeRequest, setActiveRequest] = useState(null);
   const [newMessage, setNewMessage] = useState("");
+
+  const getTimeAgo = useMemo(() => (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+
+    const minutes = Math.floor(diffMs / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (minutes > 0) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+    return 'Just now';
+  }, []);
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const fetchRequests = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/requests/restaurant`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const transformed = res.data.map((r) => ({
+        id: r.id,
+        ngoName: r.ngo?.name || 'NGO',
+        foodItem: r.food ? `${r.food.foodName} (${r.food.quantity})` : 'Food',
+        requestTime: getTimeAgo(r.createdAt),
+        status: r.status,
+        messages: []
+      }));
+
+      setRequests(transformed);
+      setActiveRequest((prev) => prev || transformed[0] || null);
+    } catch (error) {
+      handleError(error.response?.data?.message || 'Failed to load requests');
+    }
+  };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
+    if (!activeRequest) return;
 
     // Add message to the active chat
     const updatedRequest = {
@@ -48,11 +70,23 @@ export default function NgoRequests() {
     setNewMessage("");
   };
 
-  const handleAcceptRequest = () => {
-    const updatedRequest = { ...activeRequest, status: "accepted" };
-    setActiveRequest(updatedRequest);
-    setRequests(requests.map(req => req.id === activeRequest.id ? updatedRequest : req));
-    alert("Request accepted! The NGO will be notified to begin pickup.");
+  const handleAcceptRequest = async () => {
+    if (!activeRequest) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.patch(
+        `${API_URL}/api/requests/${activeRequest.id}/accept`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const updatedRequest = { ...activeRequest, status: res.data.status || "accepted" };
+      setActiveRequest(updatedRequest);
+      setRequests(requests.map(req => req.id === activeRequest.id ? updatedRequest : req));
+      handleSuccess("Request accepted! The NGO will be notified to begin pickup.");
+    } catch (error) {
+      handleError(error.response?.data?.message || 'Failed to accept request');
+    }
   };
 
   return (
@@ -85,7 +119,7 @@ export default function NgoRequests() {
                   key={req.id}
                   onClick={() => setActiveRequest(req)}
                   className={`p-5 rounded-2xl cursor-pointer transition-all border ${
-                    activeRequest.id === req.id 
+                    activeRequest?.id === req.id 
                       ? 'bg-white/10 border-green-500/50 shadow-lg' 
                       : 'bg-[#050505]/50 border-white/5 hover:bg-white/5'
                   }`}
@@ -119,29 +153,29 @@ export default function NgoRequests() {
                   <Building2 className="text-green-400" size={24} />
                 </div>
                 <div>
-                  <h2 className="font-bold text-xl text-white">{activeRequest.ngoName}</h2>
-                  <p className="text-sm text-gray-400">Requesting: <span className="text-gray-300 font-medium">{activeRequest.foodItem}</span></p>
+                  <h2 className="font-bold text-xl text-white">{activeRequest?.ngoName || 'Select a request'}</h2>
+                  <p className="text-sm text-gray-400">Requesting: <span className="text-gray-300 font-medium">{activeRequest?.foodItem || '-'}</span></p>
                 </div>
               </div>
 
               {/* Action Button */}
-              {activeRequest.status === 'pending' ? (
-                <button 
+              {activeRequest?.status === 'pending' ? (
+                <button
                   onClick={handleAcceptRequest}
                   className="flex items-center gap-2 bg-green-500 text-black px-6 py-2.5 rounded-xl font-bold hover:bg-green-400 transition-all shadow-[0_0_20px_rgba(34,197,94,0.2)]"
                 >
                   <CheckCircle size={18} /> Accept Request
                 </button>
-              ) : (
+              ) : activeRequest?.status ? (
                 <span className="flex items-center gap-2 bg-green-500/20 text-green-400 border border-green-500/30 px-6 py-2.5 rounded-xl font-bold">
                   <CheckCircle size={18} /> Accepted
                 </span>
-              )}
+              ) : null}
             </div>
 
             {/* Chat History Area */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-transparent to-white/[0.02]">
-              {activeRequest.messages.map((msg, idx) => (
+              {(activeRequest?.messages || []).map((msg, idx) => (
                 <div key={idx} className={`flex flex-col ${msg.sender === 'restaurant' ? 'items-end' : 'items-start'}`}>
                   <div className={`max-w-[80%] md:max-w-[60%] p-4 rounded-2xl ${
                     msg.sender === 'restaurant' 

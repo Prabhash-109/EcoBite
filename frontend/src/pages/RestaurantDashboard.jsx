@@ -16,17 +16,11 @@ export default function RestaurantDashboard() {
     total: 0
   });
 
-  // --- NEW: Dummy data for NGO Requests ---
-  // You will replace this with a real axios fetch later!
-  const [orderRequests] = useState([
-    { id: 101, foodName: "Mixed Veg Curry (5kg)", ngoName: "City Mission Shelter", status: "picked_up", date: "Oct 24, 2023" },
-    { id: 102, foodName: "Fresh Bread Rolls (20)", ngoName: "Feeding India", status: "claimed", date: "Today, 10:30 AM" },
-    { id: 103, foodName: "Assorted Pastries (12)", ngoName: "Hope Foundation", status: "claimed", date: "Today, 9:15 AM" },
-    { id: 104, foodName: "Steamed Rice (3kg)", ngoName: "City Mission Shelter", status: "picked_up", date: "Oct 22, 2023" },
-  ]);
+  const [orderRequests, setOrderRequests] = useState([]);
 
   useEffect(() => {
     fetchRestaurantFoods();
+    fetchNgoRequests();
   }, []);
 
   const fetchRestaurantFoods = async () => {
@@ -53,6 +47,26 @@ const total = res.data.filter(food => food.status === 'completed').length;
     }
   };
 
+  const fetchNgoRequests = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/requests/restaurant`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const transformed = res.data.map((r) => ({
+        id: r.id,
+        foodName: r.food ? `${r.food.foodName} (${r.food.quantity})` : 'Food',
+        ngoName: r.ngo?.name || 'NGO',
+        status: r.status,
+        date: new Date(r.createdAt).toLocaleString()
+      }));
+      setOrderRequests(transformed);
+    } catch (error) {
+      // Keep dashboard usable even if requests fail
+    }
+  };
+
   const getRequestStatusBadge = (status) => {
     switch (status) {
       case 'available':
@@ -63,6 +77,12 @@ const total = res.data.filter(food => food.status === 'completed').length;
         return <span className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Picked Up</span>;
       case 'expired':
         return <span className="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Expired</span>;
+      case 'pending':
+        return <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Pending</span>;
+      case 'accepted':
+        return <span className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Accepted</span>;
+      case 'rejected':
+        return <span className="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Rejected</span>;
       default:
         return <span className="bg-white/10 text-gray-400 border border-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Unknown</span>;
     }
