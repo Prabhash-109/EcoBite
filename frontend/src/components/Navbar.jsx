@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom'; // <-- Fixed: Added useLocation import
 import { Leaf, User, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-  
+  const location = useLocation(); // Gets the current URL path
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = () => {
@@ -15,28 +15,45 @@ export default function Navbar() {
     navigate('/');
   };
 
+  // Helper function to dynamically set link classes based on the current path
+  const getLinkClass = (path) => {
+    return location.pathname === path
+      ? "text-green-400 font-bold transition-colors" // Active state (Green)
+      : "text-white/70 hover:text-white font-medium transition-colors"; // Inactive state (White)
+  };
+
   const renderNavLinks = () => {
     if (!isAuthenticated) {
       return (
         <>
-          <Link to="/" className="text-white/70 hover:text-white font-medium transition-colors">Home</Link>
-          <Link to="/register" className="bg-white text-black px-6 py-2.5 rounded-full font-bold text-sm hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:scale-105 transform duration-200 text-center">
+          {/* Applied getLinkClass to Home */}
+          <Link to="/" className={getLinkClass('/')}>Home</Link>
+          <Link 
+            to="/register" 
+            className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:scale-105 transform duration-200 text-center ${
+              location.pathname === '/register' 
+                ? 'bg-green-500 text-black' // Green button if on register page
+                : 'bg-white text-black hover:bg-gray-200'
+            }`}
+          >
             Join Us
           </Link>
         </>
       );
     }
 
-    const commonLinks = <Link to="/" className="text-white/70 hover:text-white font-medium transition-colors">Home</Link>;
+    // Applied getLinkClass to the common Home link
+    const commonLinks = <Link to="/" className={getLinkClass('/')}>Home</Link>;
 
     switch (user?.account_type) {
       case 'restaurant':
         return (
           <>
             {commonLinks}
-            <Link to="/ngo-requests" className="text-white/70 hover:text-white font-medium transition-colors">Requests</Link>
-            <Link to="/food-listings" className="text-white/70 hover:text-white font-medium transition-colors">Food Listings</Link>
-            <Link to="/restaurant-dashboard" className="text-white/70 hover:text-white font-medium transition-colors">Dashboard</Link>
+            {/* Applied getLinkClass to all Restaurant links */}
+            <Link to="/ngo-requests" className={getLinkClass('/ngo-requests')}>Requests</Link>
+            <Link to="/food-listings" className={getLinkClass('/food-listings')}>Food Listings</Link>
+            <Link to="/restaurant-dashboard" className={getLinkClass('/restaurant-dashboard')}>Dashboard</Link>
             <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
               <User className="w-4 h-4 text-green-400" />
               <span className="text-white/90 font-medium text-sm">{user.name}</span>
@@ -53,9 +70,10 @@ export default function Navbar() {
         return (
           <>
             {commonLinks}
-            <Link to="/restaurants" className="text-white/70 hover:text-white font-medium transition-colors">Food Near You</Link>
-            <Link to="/manage-deliveries" className="text-white/70 hover:text-white font-medium transition-colors">Manage Deliveries</Link>
-            <Link to="/ngo-dashboard" className="text-white/70 hover:text-white font-medium transition-colors">Dashboard</Link>
+            {/* Applied getLinkClass to all NGO links */}
+            <Link to="/restaurants" className={getLinkClass('/restaurants')}>Food Near You</Link>
+            <Link to="/manage-deliveries" className={getLinkClass('/manage-deliveries')}>Manage Deliveries</Link>
+            <Link to="/ngo-dashboard" className={getLinkClass('/ngo-dashboard')}>Dashboard</Link>
             <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
               <User className="w-4 h-4 text-green-400" />
               <span className="text-white/90 font-medium text-sm">{user.name}</span>
@@ -72,7 +90,8 @@ export default function Navbar() {
         return (
           <>
             {commonLinks}
-            <Link to="/volunteer-dashboard" className="text-white/70 hover:text-white font-medium transition-colors">Volunteer Hub</Link>
+            {/* Applied getLinkClass to Volunteer link */}
+            <Link to="/volunteer-dashboard" className={getLinkClass('/volunteer-dashboard')}>Volunteer Hub</Link>
             <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
               <User className="w-4 h-4 text-green-400" />
               <span className="text-white/90 font-medium text-sm">{user.name}</span>
@@ -125,9 +144,7 @@ export default function Navbar() {
 
         {/* RIGHT-ALIGNED Mobile Dropdown Menu */}
         {isMenuOpen && (
-          // Changed 'left-0 w-full' to 'right-0 min-w-[200px]' 
           <div className="absolute top-[110%] right-0 md:hidden mt-2 min-w-[220px]">
-            {/* Changed 'items-center' to 'items-end' to push text to the right */}
             <div 
               className="flex flex-col items-end gap-5 bg-[#0a0a0a]/95 backdrop-blur-3xl border border-white/10 rounded-[2rem] p-6 shadow-2xl animate-in slide-in-from-top-2 fade-in duration-200"
               onClick={() => setIsMenuOpen(false)}
