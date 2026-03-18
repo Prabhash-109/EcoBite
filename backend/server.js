@@ -5,10 +5,12 @@ require('dotenv').config();
 const { connectDB, sequelize } = require('./config/db'); // Sequelize setup
 const authRoutes = require('./routes/authRoutes');
 const foodRoutes = require('./routes/foodRoutes');
+const requestRoutes = require('./routes/requestRoutes');
 
 // Import models for relationships
 const User = require('./models/User');
 const Food = require('./models/Food');
+const FoodRequest = require('./models/FoodRequest');
 
 const app = express();
 
@@ -20,6 +22,13 @@ app.use(express.json());
 User.hasMany(Food, { foreignKey: 'restaurantId', as: 'foods' });
 Food.belongsTo(User, { foreignKey: 'restaurantId', as: 'restaurant' });
 Food.belongsTo(User, { foreignKey: 'claimedBy', as: 'claimer' });
+
+User.hasMany(FoodRequest, { foreignKey: 'restaurantId', as: 'incomingRequests' });
+User.hasMany(FoodRequest, { foreignKey: 'ngoId', as: 'outgoingRequests' });
+FoodRequest.belongsTo(User, { foreignKey: 'restaurantId', as: 'restaurant' });
+FoodRequest.belongsTo(User, { foreignKey: 'ngoId', as: 'ngo' });
+Food.hasMany(FoodRequest, { foreignKey: 'foodId', as: 'requests' });
+FoodRequest.belongsTo(Food, { foreignKey: 'foodId', as: 'food' });
 
 // Connect to DB
 connectDB();
@@ -35,6 +44,7 @@ sequelize.sync({ alter: true })
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/food', foodRoutes);
+app.use('/api/requests', requestRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 3000;

@@ -1,5 +1,6 @@
 const Food = require('../models/Food');
 const jwt = require('jsonwebtoken');
+const FoodRequest = require('../models/FoodRequest');
 
 // Middleware to verify JWT token
 const verifyToken = (req, res, next) => {
@@ -11,7 +12,10 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    req.user = {
+      ...decoded,
+      account_type: decoded.account_type || decoded.role
+    };
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Invalid token' });
@@ -61,8 +65,18 @@ exports.getRestaurantFoods = async (req, res) => {
 // Get all available food donations (for NGOs/Volunteers)
 exports.getAvailableFoods = async (req, res) => {
   try {
+    const where = { status: 'available' };
+    // For NGOs, also show their accepted/claimed items so UI can reflect "Accepted"
+    if (req.user?.account_type === 'ngo') {
+      where[require('sequelize').Op.or] = [
+        { status: 'available' },
+        { status: 'claimed', claimedBy: req.user.id }
+      ];
+      delete where.status;
+    }
+
     const foods = await Food.findAll({
-      where: { status: 'available' },
+      where,
       include: [{
         association: 'restaurant',
         attributes: ['name', 'email']
@@ -70,7 +84,28 @@ exports.getAvailableFoods = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
-    res.json(foods);
+    if (req.user?.account_type === 'ngo') {
+      const foodIds = foods.map((f) => f.id);
+      const requests = await FoodRequest.findAll({
+        where: { ngoId: req.user.id, foodId: foodIds },
+        order: [['createdAt', 'DESC']]
+      });
+      const latestByFood = new Map();
+      for (const r of requests) {
+        if (!latestByFood.has(r.foodId)) latestByFood.set(r.foodId, r);
+      }
+      const enriched = foods.map((f) => {
+        const r = latestByFood.get(f.id);
+        return {
+          ...f.toJSON(),
+          requestStatus: r?.status || null,
+          requestId: r?.id || null
+        };
+      });
+      return res.json(enriched);
+    }
+
+    return res.json(foods);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
