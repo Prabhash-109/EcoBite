@@ -46,8 +46,7 @@ export default function RestaurantDashboard() {
       // Calculate stats based on your active listings
       const active = res.data.filter(food => food.status === 'available').length;
       const pending = res.data.filter(food => food.status === 'claimed').length;
-      const total = res.data.length;
-
+const total = res.data.filter(food => food.status === 'completed').length;
       setStats({ active, pending, total });
     } catch (error) {
       handleError('Failed to fetch food donations');

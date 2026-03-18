@@ -33,7 +33,7 @@ export default function FindFood() {
         id: food.id,
         restaurant: food.restaurant?.name || 'Restaurant',
         item: `${food.foodName} (${food.quantity})`,
-        distance: `${(Math.random() * 10 + 1).toFixed(1)} km`, // Mock distance for now
+        distance: null, // no fake data
         category: food.category,
         timeListed: getTimeAgo(food.createdAt),
         messages: []
@@ -65,7 +65,7 @@ export default function FindFood() {
   const [activeChat, setActiveChat] = useState(null);
   const [newMessage, setNewMessage] = useState("");
 
-  const filteredFood = availableFood.filter(food => parseFloat(food.distance) <= radius);
+  const filteredFood = availableFood;
 
   const handleRequest = (foodItem, restaurant) => {
     alert(`Request sent to ${restaurant} for ${foodItem}! You will be notified when they accept.`);
