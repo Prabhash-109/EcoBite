@@ -21,6 +21,10 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    phoneNumber: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     tableName: "users",

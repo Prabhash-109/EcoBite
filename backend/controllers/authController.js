@@ -5,7 +5,7 @@ const User = require("../models/User"); // Sequelize model
 // Register User
 exports.registerUser = async (req, res) => {
   try {
-    const { account_type, name, email, password } = req.body;
+    const { account_type, name, email, password,phoneNumber } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
@@ -21,7 +21,8 @@ exports.registerUser = async (req, res) => {
       account_type,
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      phoneNumber: phoneNumber
     });
 
     res.status(201).json({ message: "Registration successful" });
