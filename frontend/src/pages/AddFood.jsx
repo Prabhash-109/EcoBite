@@ -41,7 +41,7 @@ export default function AddFood() {
       );
 
       handleSuccess(res.data.message);
-      navigate('/restaurant-dashboard');
+      navigate('/food-listings');
     } catch (error) {
       handleError(error.response?.data?.message || 'Failed to create food listing');
     }

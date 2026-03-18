@@ -29,14 +29,14 @@ export default function Navbar() {
           {/* Applied getLinkClass to Home */}
           <Link to="/" className={getLinkClass('/')}>Home</Link>
           <Link 
-            to="/register" 
+            to="/login" 
             className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:scale-105 transform duration-200 text-center ${
-              location.pathname === '/register' 
-                ? 'bg-green-500 text-black' // Green button if on register page
+              location.pathname === '/login' 
+                ? 'bg-green-500 text-black' // Green button if on login page
                 : 'bg-white text-black hover:bg-gray-200'
             }`}
           >
-            Join Us
+            Login
           </Link>
         </>
       );
