@@ -1,23 +1,56 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Truck, CheckCircle, Users, AlertCircle, ArrowRight, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
+import { handleError } from '../utils';
+
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
 export default function NgoDashboard() {
   const { user } = useAuth();
 
-  const [stats] = useState({
+  const [stats, setStats] = useState({
     activeClaims: 3,
     inTransit: 1,
     totalMeals: 840,
     volunteersNearby: 12
   });
 
-  const [incomingFood] = useState([
-    { id: 1, foodItem: "Fresh Bread Rolls (20)", restaurant: "Fresh Bakes", volunteer: "Rahul S.", status: "in_transit", eta: "10 mins" },
-    { id: 2, foodItem: "Mixed Veg Curry (5kg)", restaurant: "Royal Tandoor", volunteer: "Assigning...", status: "waiting", eta: "TBD" },
-    { id: 3, foodItem: "Steamed Rice (3kg)", restaurant: "Royal Tandoor", volunteer: "Assigning...", status: "waiting", eta: "TBD" }
-  ]);
+  const [incomingFood, setIncomingFood] = useState([]);
+
+  useEffect(() => {
+    fetchAcceptedPipeline();
+  }, []);
+
+  const fetchAcceptedPipeline = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/requests/ngo`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const accepted = (res.data || []).filter((r) => r.status === 'accepted');
+
+      const transformed = accepted.map((r) => ({
+        id: r.id,
+        foodItem: r.food ? `${r.food.foodName} (${r.food.quantity})` : 'Food',
+        restaurant: r.restaurant?.name || 'Restaurant',
+        volunteer: 'Assigning...',
+        status: 'waiting',
+        eta: 'TBD'
+      }));
+
+      setIncomingFood(transformed);
+
+      setStats((prev) => ({
+        ...prev,
+        activeClaims: transformed.length
+      }));
+    } catch (error) {
+      handleError(error.response?.data?.message || 'Failed to load incoming pipeline');
+    }
+  };
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -93,15 +126,23 @@ export default function NgoDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
-                {incomingFood.map((food) => (
-                  <tr key={food.id} className="hover:bg-white/5 transition-colors">
-                    <td className="p-5 font-bold text-white">{food.foodItem}</td>
-                    <td className="p-5 text-gray-400 font-medium">{food.restaurant}</td>
-                    <td className="p-5 text-gray-400 font-medium">{food.volunteer}</td>
-                    <td className="p-5">{getStatusBadge(food.status)}</td>
-                    <td className="p-5 font-bold text-white">{food.eta}</td>
+                {incomingFood.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="p-8 text-center text-gray-500 font-medium">
+                      No accepted requests yet.
+                    </td>
                   </tr>
-                ))}
+                ) : (
+                  incomingFood.map((food) => (
+                    <tr key={food.id} className="hover:bg-white/5 transition-colors">
+                      <td className="p-5 font-bold text-white">{food.foodItem}</td>
+                      <td className="p-5 text-gray-400 font-medium">{food.restaurant}</td>
+                      <td className="p-5 text-gray-400 font-medium">{food.volunteer}</td>
+                      <td className="p-5">{getStatusBadge(food.status)}</td>
+                      <td className="p-5 font-bold text-white">{food.eta}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -65,18 +65,8 @@ exports.getRestaurantFoods = async (req, res) => {
 // Get all available food donations (for NGOs/Volunteers)
 exports.getAvailableFoods = async (req, res) => {
   try {
-    const where = { status: 'available' };
-    // For NGOs, also show their accepted/claimed items so UI can reflect "Accepted"
-    if (req.user?.account_type === 'ngo') {
-      where[require('sequelize').Op.or] = [
-        { status: 'available' },
-        { status: 'claimed', claimedBy: req.user.id }
-      ];
-      delete where.status;
-    }
-
     const foods = await Food.findAll({
-      where,
+      where: { status: 'available' },
       include: [{
         association: 'restaurant',
         attributes: ['name', 'email']
@@ -84,6 +74,8 @@ exports.getAvailableFoods = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
+    // For NGOs, enrich available items with latest request status (pending/accepted/rejected)
+    // NOTE: accepted items are "claimed" and will not appear here; they belong on NGO dashboard.
     if (req.user?.account_type === 'ngo') {
       const foodIds = foods.map((f) => f.id);
       const requests = await FoodRequest.findAll({
