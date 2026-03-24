@@ -69,23 +69,23 @@ exports.getAvailableFoods = async (req, res) => {
       where: { status: 'available' },
       include: [{
         association: 'restaurant',
-        attributes: ['name', 'email']
+        attributes: ['name', 'email', 'phoneNumber'] // ✅ ADDED
       }],
       order: [['createdAt', 'DESC']]
     });
 
-    // For NGOs, enrich available items with latest request status (pending/accepted/rejected)
-    // NOTE: accepted items are "claimed" and will not appear here; they belong on NGO dashboard.
     if (req.user?.account_type === 'ngo') {
       const foodIds = foods.map((f) => f.id);
       const requests = await FoodRequest.findAll({
         where: { ngoId: req.user.id, foodId: foodIds },
         order: [['createdAt', 'DESC']]
       });
+
       const latestByFood = new Map();
       for (const r of requests) {
         if (!latestByFood.has(r.foodId)) latestByFood.set(r.foodId, r);
       }
+
       const enriched = foods.map((f) => {
         const r = latestByFood.get(f.id);
         return {
@@ -94,6 +94,7 @@ exports.getAvailableFoods = async (req, res) => {
           requestId: r?.id || null
         };
       });
+
       return res.json(enriched);
     }
 

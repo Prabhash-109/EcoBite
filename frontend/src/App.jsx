@@ -14,7 +14,7 @@ import NgoRequests from './pages/NgoRequests';
 import AddFood from './pages/AddFood';
 import VolunteerDashboard from './pages/VolunteerDashboard';
 import FoodListings from './pages/FoodListings';
-import RestaurantDirectory from './pages/RestaurantDirectory';
+import FoodNearYouNGO from './pages/FoodNearYouNGO';
 import ManageDeliveries from './pages/ManageDelivery';
 import NgoDashboard from './pages/NgoDashboard';
 import About from './pages/About';
@@ -29,7 +29,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/restaurants" element={<RestaurantDirectory />} />
+          <Route path="/restaurants" element={<FoodNearYouNGO />} />
           
           {/* New Routes */}
           <Route path="/restaurant-dashboard" element={<RestaurantDashboard />} />

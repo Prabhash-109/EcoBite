@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Navigation, Package, Search, PlusCircle, MessageSquare, Send, X, Building2 } from 'lucide-react';
+import { MapPin, Navigation, Package, Search, PlusCircle, MessageSquare, Send, X, Building2, Phone } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { handleSuccess, handleError } from '../utils';
@@ -45,8 +45,9 @@ export default function FindFood() {
       const transformedData = res.data.map(food => ({
         id: food.id,
         restaurant: food.restaurant?.name || 'Restaurant',
+        phone: food.restaurant?.phoneNumber || 'Not available',
         item: `${food.foodName} (${food.quantity})`,
-        distance: null, // no fake data
+        distance: null,
         category: food.category,
         timeListed: getTimeAgo(food.createdAt),
         messages: [],
@@ -183,9 +184,14 @@ export default function FindFood() {
                 </div>
 
                 <h3 className="text-2xl font-black text-white mb-1 line-clamp-2">{food.item}</h3>
-                <p className="text-blue-400 font-bold mb-6 flex items-center gap-1.5 text-sm">
-                  <Building2 size={14} /> {food.restaurant}
-                </p>
+                <div className="space-y-2 mb-6">
+                  <p className="text-blue-400 font-bold flex items-center gap-1.5 text-sm">
+                    <Building2 size={14} /> {food.restaurant}
+                  </p>
+                  <p className="text-gray-400 font-medium flex items-center gap-1.5 text-sm">
+                    <Phone size={14} /> {food.phone}
+                  </p>
+                </div>
 
                 <div className="flex items-center gap-2 text-gray-400 font-medium text-sm mb-6 flex-1">
                   <div className="w-8 h-8 rounded-lg bg-[#050505] border border-white/5 flex items-center justify-center">
