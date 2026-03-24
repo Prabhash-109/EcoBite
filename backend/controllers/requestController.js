@@ -68,8 +68,16 @@ exports.getRestaurantRequests = async (req, res) => {
     const requests = await FoodRequest.findAll({
       where: { restaurantId: req.user.id },
       include: [
-        { model: User, as: 'ngo', attributes: ['id', 'name', 'email'] },
-        { model: Food, as: 'food', attributes: ['id', 'foodName', 'quantity', 'category', 'createdAt'] }
+        { 
+          model: User, 
+          as: 'ngo', 
+          attributes: ['id', 'name', 'email', 'phoneNumber'] 
+        },
+        { 
+          model: Food, 
+          as: 'food', 
+          attributes: ['id', 'foodName', 'quantity', 'category', 'createdAt'] 
+        }
       ],
       order: [['createdAt', 'DESC']]
     });
@@ -80,7 +88,6 @@ exports.getRestaurantRequests = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
 // NGO fetches their own requests (for status display)
 exports.getNgoRequests = async (req, res) => {
   try {

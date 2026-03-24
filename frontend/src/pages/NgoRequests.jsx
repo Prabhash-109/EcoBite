@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Send, Building2, Clock, CheckCircle, Package, MessageSquare } from 'lucide-react';
+import { Send, Building2, Clock, CheckCircle, Package, MessageSquare,Phone } from 'lucide-react';
 import axios from 'axios';
 import { handleError, handleSuccess } from '../utils';
 
@@ -35,10 +35,12 @@ export default function NgoRequests() {
       const res = await axios.get(`${API_URL}/api/requests/restaurant`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log(res.data);
 
       const transformed = res.data.map((r) => ({
         id: r.id,
         ngoName: r.ngo?.name || 'NGO',
+        ngoPhone: r.ngo?.phoneNumber || 'Not available',
         foodItem: r.food ? `${r.food.foodName} (${r.food.quantity})` : 'Food',
         requestTime: getTimeAgo(r.createdAt),
         status: r.status,
@@ -135,7 +137,10 @@ export default function NgoRequests() {
                     </span>
                   </div>
                   <h3 className="font-bold text-white mb-1 truncate">{req.ngoName}</h3>
-                  <p className="text-sm text-gray-400 flex items-center gap-1.5 truncate">
+                  <p className="text-sm text-gray-400 flex items-center gap-1.5">
+                    <Phone size={14} className="text-green-400" /> {req.ngoPhone}
+                  </p>
+                  <p className="text-sm text-gray-400 pt-1 flex items-center gap-2 truncate">
                     <Package size={14} className="text-gray-500" /> {req.foodItem}
                   </p>
                 </div>
