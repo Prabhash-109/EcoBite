@@ -1,4 +1,4 @@
-# 🌱 EcoBit – Smart Food Waste Management Platform
+# 🌱 EcoBite – Smart Food Waste Management Platform
 
 EcoBit is a full-stack web application designed to reduce food wastage by connecting restaurants with NGOs and volunteers. Restaurants can donate surplus food, NGOs can request it, and volunteers help in delivering it to people in need.
 
