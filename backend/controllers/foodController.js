@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const Food = require('../models/Food');
 const jwt = require('jsonwebtoken');
 const FoodRequest = require('../models/FoodRequest');
@@ -47,11 +48,15 @@ exports.createFood = async (req, res) => {
   }
 };
 
-// Get all food donations for a restaurant
+// Get all food donations for a restaurant (exclude expired by date or status)
 exports.getRestaurantFoods = async (req, res) => {
   try {
     const foods = await Food.findAll({
-      where: { restaurantId: req.user.id },
+      where: {
+        restaurantId: req.user.id,
+        expiryDate: { [Op.gt]: new Date() },
+        status: { [Op.ne]: 'expired' }
+      },
       order: [['createdAt', 'DESC']]
     });
 

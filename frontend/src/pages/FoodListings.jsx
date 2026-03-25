@@ -22,7 +22,12 @@ export default function FoodListings() {
       const res = await axios.get(`${API_URL}/api/food/my-donations`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setListings(res.data);
+      const now = new Date();
+      const active = (res.data || []).filter(
+        (item) =>
+          item.status !== 'expired' && new Date(item.expiryDate) > now
+      );
+      setListings(active);
     } catch (error) {
       handleError('Failed to fetch food listings');
     } finally {
