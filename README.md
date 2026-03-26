@@ -55,8 +55,8 @@ EcoBit is a full-stack web application designed to reduce food wastage by connec
 ## 📂 Project Structure
 
 ```
-client/         → React frontend
-server/         → Backend (Node.js + Express)
+frontend/         → React frontend
+backend/         → Backend (Node.js + Express)
 models/         → Sequelize models
 routes/         → API routes
 controllers/    → Business logic
@@ -78,7 +78,7 @@ cd ecobit
 ### 2️⃣ Setup Backend
 
 ```bash
-cd server
+cd backend
 npm install
 ```
 
@@ -103,7 +103,7 @@ npm start
 ### 3️⃣ Setup Frontend
 
 ```bash
-cd client
+cd frontend
 npm install
 npm run dev
 ```
@@ -140,9 +140,57 @@ npm run dev
 
 ---
 
-## 📸 Screenshots
+## 📸 Screenshot
 
-(Add your project screenshots here)
+### 🔐 Authentication
+
+#### 📝 Register Page
+![Register Page](./screenshots/register.png)
+
+#### 🔑 Login Page
+![Login Page](./screenshots/login.png)
+
+---
+
+### ℹ️ About Section
+
+#### 📖 About Us Page
+![About Us](./screenshots/about.png)
+
+---
+
+### 🍽️ Restaurant Features
+
+#### 🏠 Restaurant Dashboard
+![Restaurant Dashboard](./screenshots/restaurant-dashboard.png)
+
+#### ➕ Add Food Donation
+![Add Food](./screenshots/add-food.png)
+
+#### 📋 Food Listings (Manage Food)
+![Food Listings](./screenshots/food-listing.png)
+
+---
+
+### 🤝 NGO Features
+
+#### 🏢 NGO Dashboard
+![NGO Dashboard](./screenshots/ngo-dashboard.png)
+
+#### 🔍 Food Near You
+![Food Near You](./screenshots/food-near-you.png)
+
+#### 📊 Request Status Page
+![NGO Requests](./screenshots/ngo-requests.png)
+
+---
+
+### 🚚 Volunteer Features
+
+#### 🚛 Manage Deliveries
+![Manage Deliveries](./screenshots/manage-deliveries.png)
+
+---
 
 ---
 
