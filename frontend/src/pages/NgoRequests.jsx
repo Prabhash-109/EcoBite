@@ -140,7 +140,7 @@ export default function NgoRequests() {
                   <p className="text-sm text-gray-400 flex items-center gap-1.5">
                     <Phone size={14} className="text-green-400" /> {req.ngoPhone}
                   </p>
-                  <p className="text-sm text-gray-400 pt-1 flex items-center gap-2 truncate">
+                  <p className="text-sm text-gray-400 pt-1  flex items-center gap-2 truncate">
                     <Package size={14} className="text-gray-500" /> {req.foodItem}
                   </p>
                 </div>

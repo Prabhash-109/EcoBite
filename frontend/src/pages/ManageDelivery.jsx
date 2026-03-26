@@ -10,7 +10,7 @@ export default function ManageDeliveries() {
 
   const [claimedOrders, setClaimedOrders] = useState([]);
   const [activeOrder, setActiveOrder] = useState(null);
-  const [assignedOrders, setAssignedOrders] = useState([]); // Track which orders have drivers
+  const [assignedOrders, setAssignedOrders] = useState([]); 
 
   const [volunteers, setVolunteers] = useState([]);
 
