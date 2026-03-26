@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Truck, MapPin, UserCheck, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { handleError } from '../utils';
 
 export default function ManageDeliveries() {
-  const [claimedOrders] = useState([
-    { id: 1, restaurant: "Royal Tandoor", item: "Mixed Veg Curry (5kg)", timeClaimed: "10 mins ago", distance: "2.5 km" },
-    { id: 2, restaurant: "Fresh Bakes", item: "Bread Rolls (20)", timeClaimed: "1 hour ago", distance: "4.1 km" }
-  ]);
+  const { user } = useAuth();
+  const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
-  const [activeOrder, setActiveOrder] = useState(claimedOrders[0]);
+  const [claimedOrders, setClaimedOrders] = useState([]);
+  const [activeOrder, setActiveOrder] = useState(null);
   const [assignedOrders, setAssignedOrders] = useState([]); // Track which orders have drivers
 
   // Dummy list of nearby volunteers
@@ -17,7 +19,50 @@ export default function ManageDeliveries() {
     { id: 103, name: "Vikram Singh", vehicle: "Van", distance: "3.0 km", rating: "4.7★" }
   ]);
 
+  const getTimeAgo = useMemo(() => (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+
+    const minutes = Math.floor(diffMs / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (minutes > 0) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+    return 'Just now';
+  }, []);
+
+  useEffect(() => {
+    const fetchAcceptedOrders = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${API_URL}/api/requests/ngo`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const accepted = (res.data || []).filter((r) => r.status === 'accepted');
+        const transformed = accepted.map((r, idx) => ({
+          id: r.id,
+          restaurant: r.restaurant?.name || 'Restaurant',
+          item: r.food ? `${r.food.foodName} (${r.food.quantity})` : 'Food',
+          timeClaimed: getTimeAgo(r.createdAt),
+          distance: idx % 2 === 0 ? '2.5 km' : '4.1 km'
+        }));
+
+        setClaimedOrders(transformed);
+        setActiveOrder(transformed[0] || null);
+      } catch (error) {
+        handleError(error.response?.data?.message || 'Failed to load claimed orders');
+      }
+    };
+
+    fetchAcceptedOrders();
+  }, [API_URL, getTimeAgo, user]);
+
   const handleAssign = (volunteerName) => {
+    if (!activeOrder) return;
     setAssignedOrders([...assignedOrders, activeOrder.id]);
     alert(`${volunteerName} has been assigned to pick up from ${activeOrder.restaurant}!`);
   };
@@ -44,16 +89,21 @@ export default function ManageDeliveries() {
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {claimedOrders.map((order) => (
-                <div 
-                  key={order.id}
-                  onClick={() => setActiveOrder(order)}
-                  className={`p-5 rounded-2xl cursor-pointer transition-all border ${
-                    activeOrder.id === order.id 
-                      ? 'bg-white/10 border-indigo-500/50 shadow-lg' 
-                      : 'bg-[#050505]/50 border-white/5 hover:bg-white/5'
-                  }`}
-                >
+              {claimedOrders.length === 0 ? (
+                <div className="text-center text-gray-500 font-medium py-8">
+                  No accepted requests yet.
+                </div>
+              ) : (
+                claimedOrders.map((order) => (
+                  <div 
+                    key={order.id}
+                    onClick={() => setActiveOrder(order)}
+                    className={`p-5 rounded-2xl cursor-pointer transition-all border ${
+                      activeOrder?.id === order.id 
+                        ? 'bg-white/10 border-indigo-500/50 shadow-lg' 
+                        : 'bg-[#050505]/50 border-white/5 hover:bg-white/5'
+                    }`}
+                  >
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-indigo-400 font-black text-sm">{order.restaurant}</span>
                     <span className="text-xs text-gray-500 font-bold">{order.timeClaimed}</span>
@@ -67,8 +117,9 @@ export default function ManageDeliveries() {
                       </span>
                     )}
                   </div>
-                </div>
-              ))}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -77,7 +128,7 @@ export default function ManageDeliveries() {
             <div className="p-6 border-b border-white/10 bg-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h2 className="font-bold text-xl text-white">Nearby Volunteers</h2>
-                <p className="text-sm text-gray-400">For: <span className="text-indigo-300 font-medium">{activeOrder.item}</span></p>
+                <p className="text-sm text-gray-400">For: <span className="text-indigo-300 font-medium">{activeOrder?.item || '-'}</span></p>
               </div>
               <span className="bg-white/10 text-white px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border border-white/10 flex items-center gap-2">
                 <ShieldCheck size={14} className="text-green-400"/> Verified Drivers Only
@@ -85,7 +136,7 @@ export default function ManageDeliveries() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-transparent to-white/[0.02]">
-              {assignedOrders.includes(activeOrder.id) ? (
+              {activeOrder && assignedOrders.includes(activeOrder.id) ? (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-70">
                   <CheckCircle2 size={64} className="text-green-500 mb-4" />
                   <h3 className="text-2xl font-black text-white mb-2">Driver Dispatched!</h3>
@@ -106,7 +157,7 @@ export default function ManageDeliveries() {
                       </div>
                     </div>
                     <button 
-                      onClick={() => handleAssign(vol.name)}
+                      onClick={() => activeOrder && handleAssign(vol.name)}
                       className="bg-white text-black px-6 py-2.5 rounded-xl font-bold hover:bg-gray-200 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2"
                     >
                       <UserCheck size={18} /> Assign Task
