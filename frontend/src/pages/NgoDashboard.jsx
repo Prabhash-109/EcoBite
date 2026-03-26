@@ -21,6 +21,7 @@ export default function NgoDashboard() {
 
   useEffect(() => {
     fetchAcceptedPipeline();
+    fetchVolunteerCount();
   }, []);
 
   const fetchAcceptedPipeline = async () => {
@@ -49,6 +50,22 @@ export default function NgoDashboard() {
       }));
     } catch (error) {
       handleError(error.response?.data?.message || 'Failed to load incoming pipeline');
+    }
+  };
+
+  const fetchVolunteerCount = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/users/volunteers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setStats((prev) => ({
+        ...prev,
+        volunteersNearby: (res.data || []).length
+      }));
+    } catch (error) {
+      handleError(error.response?.data?.message || 'Failed to load volunteers count');
     }
   };
 
@@ -108,7 +125,7 @@ export default function NgoDashboard() {
           <div className="p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl transition-all hover:-translate-y-1 hover:bg-white/10 group">
             <div className="mb-4 text-purple-400 group-hover:scale-110 transition-transform"><Users size={28} /></div>
             <div className="text-3xl font-black text-white">{stats.volunteersNearby}</div>
-            <div className="text-gray-400 font-medium text-sm">Volunteers in 5km</div>
+            <div className="text-gray-400 font-medium text-sm">Total Volunteers</div>
           </div>
         </div>
 
