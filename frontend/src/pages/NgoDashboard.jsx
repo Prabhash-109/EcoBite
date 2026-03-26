@@ -102,7 +102,7 @@ export default function NgoDashboard() {
             <MapPin size={22} /> Find Food Nearby
           </Link>
           <Link to="/manage-deliveries" className="flex-1 flex items-center justify-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 text-white py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all shadow-sm hover:-translate-y-1">
-            <Truck size={22} /> Manage Deliveries <span className="bg-blue-500 text-black px-2.5 py-0.5 rounded-full text-xs font-black ml-2 shadow-[0_0_10px_rgba(59,130,246,0.4)]">2 PENDING</span>
+            <Truck size={22} /> Manage Deliveries
           </Link>
         </div>
 
