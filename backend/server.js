@@ -6,6 +6,7 @@ const { connectDB, sequelize } = require('./config/db'); // Sequelize setup
 const authRoutes = require('./routes/authRoutes');
 const foodRoutes = require('./routes/foodRoutes');
 const requestRoutes = require('./routes/requestRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Import models for relationships
 const User = require('./models/User');
@@ -45,6 +46,7 @@ sequelize.sync({ alter: true })
 app.use('/api/auth', authRoutes);
 app.use('/api/food', foodRoutes);
 app.use('/api/requests', requestRoutes);
+app.use('/api/users', userRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 3000;

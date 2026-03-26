@@ -12,12 +12,7 @@ export default function ManageDeliveries() {
   const [activeOrder, setActiveOrder] = useState(null);
   const [assignedOrders, setAssignedOrders] = useState([]); // Track which orders have drivers
 
-  // Dummy list of nearby volunteers
-  const [volunteers] = useState([
-    { id: 101, name: "Rahul Sharma", vehicle: "Motorcycle", distance: "0.5 km", rating: "4.9★" },
-    { id: 102, name: "Anita Desai", vehicle: "Car", distance: "1.2 km", rating: "5.0★" },
-    { id: 103, name: "Vikram Singh", vehicle: "Van", distance: "3.0 km", rating: "4.7★" }
-  ]);
+  const [volunteers, setVolunteers] = useState([]);
 
   const getTimeAgo = useMemo(() => (dateString) => {
     const date = new Date(dateString);
@@ -60,6 +55,32 @@ export default function ManageDeliveries() {
 
     fetchAcceptedOrders();
   }, [API_URL, getTimeAgo, user]);
+
+  useEffect(() => {
+    const fetchVolunteers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${API_URL}/api/users/volunteers`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Keep UI fields intact (vehicle/distance/rating not stored yet)
+        const transformed = (res.data || []).map((v, idx) => ({
+          id: v.id,
+          name: v.name,
+          vehicle: 'Volunteer',
+          distance: idx % 2 === 0 ? '0.5 km' : '1.2 km',
+          rating: ''
+        }));
+
+        setVolunteers(transformed);
+      } catch (error) {
+        handleError(error.response?.data?.message || 'Failed to load volunteers');
+      }
+    };
+
+    fetchVolunteers();
+  }, [API_URL, user]);
 
   const handleAssign = (volunteerName) => {
     if (!activeOrder) return;
