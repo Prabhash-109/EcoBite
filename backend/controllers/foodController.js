@@ -74,7 +74,7 @@ exports.getAvailableFoods = async (req, res) => {
       where: { 
         status: 'available',
         expiryDate: {
-          [Op.gt]: new Date() // Only show foods that haven't expired
+          [Op.gt]: new Date() 
         }
       },
       include: [{
