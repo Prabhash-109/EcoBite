@@ -71,10 +71,15 @@ exports.getRestaurantFoods = async (req, res) => {
 exports.getAvailableFoods = async (req, res) => {
   try {
     const foods = await Food.findAll({
-      where: { status: 'available' },
+      where: { 
+        status: 'available',
+        expiryDate: {
+          [Op.gt]: new Date() // Only show foods that haven't expired
+        }
+      },
       include: [{
         association: 'restaurant',
-        attributes: ['name', 'email', 'phoneNumber'] // ✅ ADDED
+        attributes: ['name', 'email', 'phoneNumber']
       }],
       order: [['createdAt', 'DESC']]
     });
