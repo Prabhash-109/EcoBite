@@ -116,35 +116,52 @@ export default function NgoRequests() {
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {requests.map((req) => (
-                <div 
-                  key={req.id}
-                  onClick={() => setActiveRequest(req)}
-                  className={`p-5 rounded-2xl cursor-pointer transition-all border ${
-                    activeRequest?.id === req.id 
-                      ? 'bg-white/10 border-green-500/50 shadow-lg' 
-                      : 'bg-[#050505]/50 border-white/5 hover:bg-white/5'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className={`text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-widest ${
-                      req.status === 'pending' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    }`}>
-                      {req.status}
-                    </span>
-                    <span className="text-xs text-gray-500 font-bold flex items-center gap-1">
-                      <Clock size={12} /> {req.requestTime}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-white mb-1 truncate">{req.ngoName}</h3>
-                  <p className="text-sm text-gray-400 flex items-center gap-1.5">
-                    <Phone size={14} className="text-green-400" /> {req.ngoPhone}
-                  </p>
-                  <p className="text-sm text-gray-400 pt-1  flex items-center gap-2 truncate">
-                    <Package size={14} className="text-gray-500" /> {req.foodItem}
+              {requests.length === 0 ? (
+                <div className="h-full min-h-[250px] flex flex-col items-center justify-center text-center rounded-2xl border border-dashed border-white/10 bg-[#050505]/30 px-6">
+                  <Package size={40} className="text-gray-600 mb-3" />
+                  <h3 className="text-white font-bold text-lg">No inquiries yet</h3>
+                  <p className="text-sm text-gray-400 mt-1">
+                    New inquiries will appear here when NGOs contact you.
                   </p>
                 </div>
-              ))}
+              ) : (
+                requests.map((req) => (
+                  <div 
+                    key={req.id}
+                    onClick={() => setActiveRequest(req)}
+                    className={`p-5 rounded-2xl cursor-pointer transition-all border ${
+                      activeRequest?.id === req.id 
+                        ? 'bg-white/10 border-green-500/50 shadow-lg' 
+                        : 'bg-[#050505]/50 border-white/5 hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <span
+                        className={`text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-widest ${
+                          req.status === 'pending'
+                            ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                            : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                        }`}
+                      >
+                        {req.status}
+                      </span>
+                      <span className="text-xs text-gray-500 font-bold flex items-center gap-1">
+                        <Clock size={12} /> {req.requestTime}
+                      </span>
+                    </div>
+
+                    <h3 className="font-bold text-white mb-1 truncate">{req.ngoName}</h3>
+
+                    <p className="text-sm text-gray-400 flex items-center gap-1.5">
+                      <Phone size={14} className="text-green-400" /> {req.ngoPhone}
+                    </p>
+
+                    <p className="text-sm text-gray-400 pt-1 flex items-center gap-2 truncate">
+                      <Package size={14} className="text-gray-500" /> {req.foodItem}
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
