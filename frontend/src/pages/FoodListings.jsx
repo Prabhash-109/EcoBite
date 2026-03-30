@@ -68,7 +68,7 @@ export default function FoodListings() {
     return `${hours}h ${minutes}m left`;
   };
 
-  // 🔥 NEW: Expiry Progress Logic
+  
   const getExpiryProgress = (expiryDate) => {
     const now = new Date();
     const expiry = new Date(expiryDate);
