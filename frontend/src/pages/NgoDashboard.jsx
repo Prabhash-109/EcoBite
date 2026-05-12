@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Truck, CheckCircle, Users, AlertCircle, ArrowRight, Clock } from 'lucide-react';
+import { MapPin, Truck, CheckCircle, Users, ArrowRight, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { handleError } from '../utils';
@@ -11,10 +11,10 @@ export default function NgoDashboard() {
   const { user } = useAuth();
 
   const [stats, setStats] = useState({
-    activeClaims: 3,
-    inTransit: 1,
-    totalMeals: 840,
-    volunteersNearby: 12
+    activeClaims: 0,
+    assigned: 0,
+    delivered: 0,
+    volunteersNearby: 0
   });
 
   const [incomingFood, setIncomingFood] = useState([]);
@@ -22,6 +22,13 @@ export default function NgoDashboard() {
   useEffect(() => {
     fetchAcceptedPipeline();
     fetchVolunteerCount();
+
+    const interval = setInterval(() => {
+      fetchAcceptedPipeline();
+      fetchVolunteerCount();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const fetchAcceptedPipeline = async () => {
@@ -31,22 +38,29 @@ export default function NgoDashboard() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const accepted = (res.data || []).filter((r) => r.status === 'accepted');
+      const allRequests = res.data || [];
+      const pipeline = allRequests.filter((r) => ['accepted', 'assigned', 'picked_up', 'delivered'].includes(r.status));
 
-      const transformed = accepted.map((r) => ({
+      const transformed = pipeline.map((r) => ({
         id: r.id,
         foodItem: r.food ? `${r.food.foodName} (${r.food.quantity})` : 'Food',
         restaurant: r.restaurant?.name || 'Restaurant',
-        volunteer: 'Assigning...',
-        status: 'waiting',
-        eta: 'TBD'
+        volunteer: r.volunteer?.name || (r.status === 'accepted' ? 'Not Assigned' : 'Unknown'),
+        status: r.status === 'picked_up' ? 'delivered' : r.status,
+        eta: (r.status === 'delivered' || r.status === 'picked_up') ? 'Delivered' : r.status === 'assigned' ? 'On the way' : 'TBD'
       }));
 
       setIncomingFood(transformed);
 
+      const acceptedCount = pipeline.filter((r) => r.status === 'accepted').length;
+      const assignedCount = pipeline.filter((r) => r.status === 'assigned').length;
+      const deliveredCount = pipeline.filter((r) => r.status === 'delivered' || r.status === 'picked_up').length;
+
       setStats((prev) => ({
         ...prev,
-        activeClaims: transformed.length
+        activeClaims: acceptedCount,
+        assigned: assignedCount,
+        delivered: deliveredCount
       }));
     } catch (error) {
       handleError(error.response?.data?.message || 'Failed to load incoming pipeline');
@@ -71,12 +85,14 @@ export default function NgoDashboard() {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'in_transit':
-        return <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">In Transit</span>;
-      case 'waiting':
+      case 'accepted':
         return <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Awaiting Driver</span>;
+      case 'assigned':
+        return <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Assigned</span>;
+      case 'delivered':
+        return <span className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Completed</span>;
       default:
-        return <span className="bg-white/10 text-gray-400 border border-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Unknown</span>;
+        return <span className="bg-white/10 text-gray-400 border border-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{status}</span>;
     }
   };
 
@@ -89,12 +105,7 @@ export default function NgoDashboard() {
         
         <div className="mb-10">
           <h1 className="text-4xl font-black text-white mb-2">Welcome back, {user?.name || "City Mission"}</h1>
-          <p className="text-gray-400 text-lg mb-6">Here is your daily incoming food snapshot.</p>
-          
-          <div className="bg-orange-500/10 backdrop-blur-md border border-orange-500/20 p-4 rounded-2xl flex items-center gap-3 text-orange-400 shadow-lg">
-            <AlertCircle size={20} />
-            <span className="font-medium text-sm">Action Needed: You have <strong>2 claimed orders</strong> waiting for a volunteer assignment.</span>
-          </div>
+          <p className="text-gray-400 text-lg">Here is your daily incoming food snapshot.</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-10">
@@ -114,13 +125,13 @@ export default function NgoDashboard() {
           </div>
           <div className="p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl transition-all hover:-translate-y-1 hover:bg-white/10 group">
             <div className="mb-4 text-blue-400 group-hover:scale-110 transition-transform"><Truck size={28} /></div>
-            <div className="text-3xl font-black text-white">{stats.inTransit}</div>
-            <div className="text-gray-400 font-medium text-sm">In Transit</div>
+            <div className="text-3xl font-black text-white">{stats.assigned}</div>
+            <div className="text-gray-400 font-medium text-sm">Assigned</div>
           </div>
           <div className="p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl transition-all hover:-translate-y-1 hover:bg-white/10 group">
             <div className="mb-4 text-green-400 group-hover:scale-110 transition-transform"><CheckCircle size={28} /></div>
-            <div className="text-3xl font-black text-white">{stats.totalMeals}</div>
-            <div className="text-gray-400 font-medium text-sm">Lifetime Meals Secured</div>
+            <div className="text-3xl font-black text-white">{stats.delivered}</div>
+            <div className="text-gray-400 font-medium text-sm">Completed Deliveries</div>
           </div>
           <div className="p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl transition-all hover:-translate-y-1 hover:bg-white/10 group">
             <div className="mb-4 text-purple-400 group-hover:scale-110 transition-transform"><Users size={28} /></div>

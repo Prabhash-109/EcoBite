@@ -24,10 +24,19 @@ const FoodRequest = sequelize.define(
       allowNull: false,
       references: { model: 'users', key: 'id' }
     },
+    volunteerId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: { model: 'users', key: 'id' }
+    },
     status: {
-      type: DataTypes.ENUM('pending', 'accepted', 'rejected'),
+      type: DataTypes.ENUM('pending', 'accepted', 'rejected', 'assigned', 'picked_up', 'delivered'),
       allowNull: false,
       defaultValue: 'pending'
+    },
+    assignedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   },
   {

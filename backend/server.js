@@ -28,6 +28,8 @@ User.hasMany(FoodRequest, { foreignKey: 'restaurantId', as: 'incomingRequests' }
 User.hasMany(FoodRequest, { foreignKey: 'ngoId', as: 'outgoingRequests' });
 FoodRequest.belongsTo(User, { foreignKey: 'restaurantId', as: 'restaurant' });
 FoodRequest.belongsTo(User, { foreignKey: 'ngoId', as: 'ngo' });
+FoodRequest.belongsTo(User, { foreignKey: 'volunteerId', as: 'volunteer' });
+User.hasMany(FoodRequest, { foreignKey: 'volunteerId', as: 'volunteerAssignments' });
 Food.hasMany(FoodRequest, { foreignKey: 'foodId', as: 'requests' });
 FoodRequest.belongsTo(Food, { foreignKey: 'foodId', as: 'food' });
 

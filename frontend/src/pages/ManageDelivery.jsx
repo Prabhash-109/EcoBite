@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Truck, MapPin, UserCheck, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { handleError } from '../utils';
+import { handleError, handleSuccess } from '../utils';
 
 export default function ManageDeliveries() {
   const { user } = useAuth();
@@ -11,6 +11,7 @@ export default function ManageDeliveries() {
   const [claimedOrders, setClaimedOrders] = useState([]);
   const [activeOrder, setActiveOrder] = useState(null);
   const [assignedOrders, setAssignedOrders] = useState([]); 
+  const [assigningId, setAssigningId] = useState(null);
 
   const [volunteers, setVolunteers] = useState([]);
 
@@ -82,10 +83,25 @@ export default function ManageDeliveries() {
     fetchVolunteers();
   }, [API_URL, user]);
 
-  const handleAssign = (volunteerName) => {
+  const handleAssign = async (volunteer) => {
     if (!activeOrder) return;
-    setAssignedOrders([...assignedOrders, activeOrder.id]);
-    alert(`${volunteerName} has been assigned to pick up from ${activeOrder.restaurant}!`);
+    setAssigningId(volunteer.id);
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(
+        `${API_URL}/api/requests/${activeOrder.id}/assign`,
+        { volunteerId: volunteer.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setAssignedOrders([...assignedOrders, activeOrder.id]);
+      handleSuccess(`${volunteer.name} has been assigned to pick up from ${activeOrder.restaurant}!`);
+    } catch (error) {
+      handleError(error.response?.data?.message || 'Failed to assign volunteer');
+    } finally {
+      setAssigningId(null);
+    }
   };
 
   return (
@@ -178,10 +194,11 @@ export default function ManageDeliveries() {
                       </div>
                     </div>
                     <button 
-                      onClick={() => activeOrder && handleAssign(vol.name)}
-                      className="bg-white text-black px-6 py-2.5 rounded-xl font-bold hover:bg-gray-200 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2"
+                      onClick={() => activeOrder && handleAssign(vol)}
+                      disabled={assigningId === vol.id}
+                      className="bg-white text-black px-6 py-2.5 rounded-xl font-bold hover:bg-gray-200 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <UserCheck size={18} /> Assign Task
+                      <UserCheck size={18} /> {assigningId === vol.id ? 'Assigning...' : 'Assign Task'}
                     </button>
                   </div>
                 ))

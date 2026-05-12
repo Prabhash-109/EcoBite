@@ -1,50 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Package, Clock, CheckCircle, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Plus, Package, Clock, CheckCircle, MessageSquare, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { handleSuccess, handleError } from '../utils';
+import { handleError } from '../utils';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
 export default function RestaurantDashboard() {
   const { user } = useAuth();
-  const [foods, setFoods] = useState([]);
   const [stats, setStats] = useState({
     active: 0,
     pending: 0,
+    delivered: 0,
     total: 0
   });
 
   const [orderRequests, setOrderRequests] = useState([]);
 
   useEffect(() => {
-    fetchRestaurantFoods();
-    fetchNgoRequests();
+    fetchData();
+
+    const interval = setInterval(() => {
+      fetchData();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  const fetchRestaurantFoods = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(
-        `${API_URL}/api/food/my-donations`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      setFoods(res.data);
-      
-      // Calculate stats based on your active listings
-      const active = res.data.filter(food => food.status === 'available').length;
-      const pending = res.data.filter(food => food.status === 'claimed').length;
-const total = res.data.filter(food => food.status === 'completed').length;
-      setStats({ active, pending, total });
-    } catch (error) {
-      handleError('Failed to fetch food donations');
-    }
+  const fetchData = () => {
+    fetchNgoRequests();
   };
 
   const fetchNgoRequests = async () => {
@@ -54,14 +39,24 @@ const total = res.data.filter(food => food.status === 'completed').length;
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const transformed = res.data.map((r) => ({
+      const allRequests = res.data || [];
+      const transformed = allRequests.map((r) => ({
         id: r.id,
         foodName: r.food ? `${r.food.foodName} (${r.food.quantity})` : 'Food',
         ngoName: r.ngo?.name || 'NGO',
+        volunteerName: r.volunteer?.name || '-',
         status: r.status,
         date: new Date(r.createdAt).toLocaleString()
       }));
+
       setOrderRequests(transformed);
+
+      const total = allRequests.length;
+      const deliveredCount = allRequests.filter(r => r.status === 'delivered' || r.status === 'picked_up').length;
+      const pendingCount = allRequests.filter(r => r.status === 'pending').length;
+      const activeCount = total - deliveredCount;
+
+      setStats({ active: activeCount, pending: pendingCount, delivered: deliveredCount, total });
     } catch (error) {
       // Keep dashboard usable even if requests fail
     }
@@ -69,29 +64,27 @@ const total = res.data.filter(food => food.status === 'completed').length;
 
   const getRequestStatusBadge = (status) => {
     switch (status) {
-      case 'available':
-        return <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Available</span>;
-      case 'claimed':
-        return <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Claimed</span>;
-      case 'picked_up':
-        return <span className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Picked Up</span>;
-      case 'expired':
-        return <span className="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Expired</span>;
       case 'pending':
-        return <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Pending</span>;
+        return <span className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Pending</span>;
       case 'accepted':
         return <span className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Accepted</span>;
       case 'rejected':
         return <span className="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Rejected</span>;
+      case 'assigned':
+        return <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Assigned</span>;
+      case 'delivered':
+      case 'picked_up':
+        return <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Delivered</span>;
       default:
-        return <span className="bg-white/10 text-gray-400 border border-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Unknown</span>;
+        return <span className="bg-white/10 text-gray-400 border border-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{status}</span>;
     }
   };
 
   const statsData = [
-    { label: "Active Listings", value: stats.active.toString(), icon: <Package className="text-blue-400" /> },
-    { label: "Pending Pickups", value: stats.pending.toString(), icon: <Clock className="text-orange-400" /> },
-    { label: "Total Donations", value: stats.total.toString(), icon: <CheckCircle className="text-green-400" /> },
+    { label: "Active Listings", value: stats.active, icon: <Package className="text-blue-400" /> },
+    { label: "Pending Pickups", value: stats.pending, icon: <Clock className="text-orange-400" /> },
+    { label: "Completed Deliveries", value: stats.delivered, icon: <CheckCircle className="text-green-400" /> },
+    { label: "Total Donations", value: stats.total, icon: <Truck className="text-purple-400" /> },
   ];
 
   return (
@@ -103,17 +96,10 @@ const total = res.data.filter(food => food.status === 'completed').length;
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
         
-        {/* 1. WELCOME & ALERT BAR */}
+        {/* 1. WELCOME */}
         <div className="mb-10">
           <h1 className="text-4xl font-black text-white mb-2">Welcome back, {user?.name || "Partner"}</h1>
-          <p className="text-gray-400 text-lg mb-6">Here is your daily surplus snapshot.</p>
-          
-          {stats.pending > 0 && (
-            <div className="bg-orange-500/10 backdrop-blur-md border border-orange-500/20 p-4 rounded-2xl flex items-center gap-3 text-orange-400 shadow-lg">
-              <AlertTriangle size={20} />
-              <span className="font-medium text-sm">Action Needed: You have <strong>{stats.pending} claimed</strong> order(s) awaiting pickup.</span>
-            </div>
-          )}
+          <p className="text-gray-400 text-lg">Here is your daily surplus snapshot.</p>
         </div>
 
         {/* 2. QUICK ACTION TRIGGERS */}
@@ -127,7 +113,7 @@ const total = res.data.filter(food => food.status === 'completed').length;
         </div>
 
         {/* 3. STATS */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
           {statsData.map((stat, i) => (
             <div key={i} className="p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl transition-all hover:-translate-y-1 hover:bg-white/10 group">
               <div className="mb-4 group-hover:scale-110 transition-transform">{stat.icon}</div>
@@ -146,6 +132,7 @@ const total = res.data.filter(food => food.status === 'completed').length;
                 <tr>
                   <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Food Item</th>
                   <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Requested By (NGO)</th>
+                  <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Volunteer</th>
                   <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Date</th>
                   <th className="p-5 font-bold text-gray-400 uppercase tracking-wider text-xs">Status</th>
                 </tr>
@@ -153,16 +140,16 @@ const total = res.data.filter(food => food.status === 'completed').length;
               <tbody className="divide-y divide-white/10">
                 {orderRequests.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="p-8 text-center text-gray-500 font-medium">
+                    <td colSpan="5" className="p-8 text-center text-gray-500 font-medium">
                       No requests have been made yet.
                     </td>
                   </tr>
                 ) : (
-                  // --- FIX: Mapping over orderRequests instead of foods ---
                   orderRequests.map((request) => (
                     <tr key={request.id} className="hover:bg-white/5 transition-colors">
                       <td className="p-5 font-bold text-white">{request.foodName}</td>
                       <td className="p-5 text-gray-400 font-medium">{request.ngoName}</td>
+                      <td className="p-5 text-gray-400 font-medium">{request.volunteerName}</td>
                       <td className="p-5 text-gray-400 font-medium text-sm">{request.date}</td>
                       <td className="p-5">{getRequestStatusBadge(request.status)}</td>
                     </tr>
