@@ -2,9 +2,7 @@ const { Op } = require('sequelize');
 const Food = require('../models/Food');
 const User = require('../models/User');
 const FoodRequest = require('../models/FoodRequest');
-<<<<<<< HEAD
 const { verifyToken, requireRole } = require('../middleware/authMiddleware');
-=======
 const { sendRequestAcceptedEmail, sendDeliveryCompletedEmail } = require('../config/mailer');
 
 const verifyToken = (req, res, next) => {
@@ -29,8 +27,6 @@ const requireRole = (role) => (req, res, next) => {
   }
   next();
 };
->>>>>>> 1ce9805938fbf0bd59cb7dcf1dd2b883e164d52a
-
 // NGO creates a request for a food item
 exports.createRequest = async (req, res) => {
   try {
