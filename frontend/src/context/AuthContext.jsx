@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { onAuthStateChanged } from '../firebase/firebaseAuth';
 
 const AuthContext = createContext();
 
@@ -31,16 +32,30 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  const loginWithFirebase = (userData, idToken) => {
+    setUser(userData);
+    localStorage.setItem('token', idToken);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('authMethod', 'firebase');
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('authMethod');
+  };
+
+  const getAuthMethod = () => {
+    return localStorage.getItem('authMethod') || 'traditional';
   };
 
   const value = {
     user,
     login,
+    loginWithFirebase,
     logout,
+    getAuthMethod,
     isAuthenticated: !!user,
     isLoading
   };

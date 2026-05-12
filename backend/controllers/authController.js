@@ -1,69 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User"); // Sequelize model
-const { auth } = require("../config/firebase");
-
-const firebaseProviderMap = {
-  google: "google.com",
-  github: "github.com",
-};
-
-// Keep JWT creation in one place so normal and Firebase auth return the same app token shape.
-const generateAppToken = (user) => {
-  return jwt.sign(
-    {
-      id: user.id,
-      email: user.email,
-      role: user.account_type,
-      account_type: user.account_type,
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
-};
-
-// The frontend sends a Firebase ID token; the backend verifies it with Firebase Admin.
-const verifyFirebaseLogin = async (idToken, requestedProvider) => {
-  if (!idToken) {
-    throw new Error("Firebase ID token is required");
-  }
-
-  const decodedToken = await auth.verifyIdToken(idToken);
-  const firebaseProvider = decodedToken.firebase?.sign_in_provider;
-  const expectedProvider = firebaseProviderMap[requestedProvider];
-
-  // This prevents a Google token from being accepted by the GitHub endpoint flow, and vice versa.
-  if (expectedProvider && firebaseProvider !== expectedProvider) {
-    throw new Error("Firebase provider does not match request provider");
-  }
-
-  if (!decodedToken.email) {
-    throw new Error("Firebase account does not include an email address");
-  }
-
-  return {
-    firebaseUid: decodedToken.uid,
-    email: decodedToken.email,
-    name: decodedToken.name,
-    picture: decodedToken.picture,
-    provider: firebaseProvider,
-  };
-};
-
-const sendAuthResponse = (res, user, message, statusCode = 200) => {
-  const token = generateAppToken(user);
-
-  return res.status(statusCode).json({
-    message,
-    token,
-    id: user.id,
-    role: user.account_type,
-    account_type: user.account_type,
-    name: user.name,
-    email: user.email,
-    phoneNumber: user.phoneNumber,
-  });
-};
 
 // Register User
 exports.registerUser = async (req, res) => {
@@ -87,6 +24,9 @@ exports.registerUser = async (req, res) => {
       password: hashedPassword,
       phoneNumber: phoneNumber
     });
+
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail(email, name, account_type);
 
     res.status(201).json({ message: "Registration successful" });
 
