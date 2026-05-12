@@ -19,7 +19,8 @@ const User = sequelize.define(
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: false,
+      // Firebase users do not have a local password hash.
+      allowNull: true,
     },
     phoneNumber: {
       type: DataTypes.STRING,

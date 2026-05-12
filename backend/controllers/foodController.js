@@ -1,27 +1,7 @@
 const { Op } = require('sequelize');
 const Food = require('../models/Food');
-const jwt = require('jsonwebtoken');
 const FoodRequest = require('../models/FoodRequest');
-
-// Middleware to verify JWT token
-const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = {
-      ...decoded,
-      account_type: decoded.account_type || decoded.role
-    };
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: 'Invalid token' });
-  }
-};
+const { verifyToken } = require('../middleware/authMiddleware');
 
 // Create new food donation
 exports.createFood = async (req, res) => {
