@@ -36,9 +36,6 @@ const sendAuthResponse = (
   });
 };
 
-// ==========================================
-// Register User
-// ==========================================
 exports.registerUser = async (req, res) => {
   try {
     const {
@@ -72,7 +69,7 @@ exports.registerUser = async (req, res) => {
       phoneNumber
     });
 
-    // Send welcome email (non-blocking)
+  
     try {
       sendWelcomeEmail(email, name, account_type);
     } catch (err) {
