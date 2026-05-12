@@ -105,8 +105,8 @@ export default function Login() {
         photoURL: user.photoURL
       };
 
-      // Use Firebase login method
-      loginWithFirebase(userData, idToken);
+      // Store the app JWT from the backend so protected API routes work.
+      loginWithFirebase(userData, res.data.token);
 
       // Redirect based on role
       switch (res.data.account_type) {

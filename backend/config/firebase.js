@@ -12,4 +12,25 @@ if (!admin.apps.length) {
 // Export the Admin auth instance used by controllers to call verifyIdToken().
 const auth = admin.auth();
 
-module.exports = { admin, auth };
+// Verify Firebase ID token and return user data
+const verifyFirebaseLogin = async (idToken) => {
+  if (!idToken) {
+    throw new Error("Firebase ID token is required");
+  }
+
+  const decodedToken = await auth.verifyIdToken(idToken);
+  
+  if (!decodedToken.email) {
+    throw new Error("Firebase account does not include an email address");
+  }
+
+  return {
+    firebaseUid: decodedToken.uid,
+    email: decodedToken.email,
+    name: decodedToken.name,
+    picture: decodedToken.picture,
+    provider: decodedToken.firebase?.sign_in_provider,
+  };
+};
+
+module.exports = { admin, auth, verifyFirebaseLogin };
