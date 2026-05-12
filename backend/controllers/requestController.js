@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const Food = require('../models/Food');
 const User = require('../models/User');
 const FoodRequest = require('../models/FoodRequest');
+const { sendRequestAcceptedEmail, sendDeliveryCompletedEmail } = require('../config/mailer');
 
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -147,6 +148,13 @@ exports.acceptRequest = async (req, res) => {
       }
     );
 
+    // Send email to NGO that their request was accepted
+    const ngo = await User.findByPk(fr.ngoId);
+    const restaurant = await User.findByPk(fr.restaurantId);
+    if (ngo && restaurant && food) {
+      sendRequestAcceptedEmail(ngo.email, ngo.name, restaurant.name, food.foodName);
+    }
+
     return res.json(fr);
   } catch (error) {
     console.error(error);
@@ -277,6 +285,23 @@ exports.markDelivered = async (req, res) => {
     }
 
     await fr.update({ status: 'delivered' });
+
+    // Send delivery completed emails to NGO and restaurant
+    const volunteer = await User.findByPk(fr.volunteerId);
+    const ngo = await User.findByPk(fr.ngoId);
+    const restaurant = await User.findByPk(fr.restaurantId);
+    const food = await Food.findByPk(fr.foodId);
+    const foodName = food?.foodName || 'Food Item';
+    const volunteerName = volunteer?.name || 'Volunteer';
+    const restaurantName = restaurant?.name || 'Restaurant';
+    const ngoName = ngo?.name || 'NGO';
+
+    if (ngo) {
+      sendDeliveryCompletedEmail(ngo.email, ngoName, volunteerName, foodName, restaurantName, ngoName);
+    }
+    if (restaurant) {
+      sendDeliveryCompletedEmail(restaurant.email, restaurantName, volunteerName, foodName, restaurantName, ngoName);
+    }
 
     return res.json({ message: 'Marked as delivered', request: fr });
   } catch (error) {

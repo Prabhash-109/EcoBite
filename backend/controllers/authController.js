@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User"); // Sequelize model
+const { sendWelcomeEmail } = require("../config/mailer");
 
 // Register User
 exports.registerUser = async (req, res) => {
@@ -24,6 +25,9 @@ exports.registerUser = async (req, res) => {
       password: hashedPassword,
       phoneNumber: phoneNumber
     });
+
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail(email, name, account_type);
 
     res.status(201).json({ message: "Registration successful" });
 
