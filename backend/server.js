@@ -16,10 +16,7 @@ const userRoutes = require("./routes/userRoutes");
 const app = express();
 
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    process.env.FRONTEND_URL
-  ],
+  origin: "https://eco-bite-seven.vercel.app",
   credentials: true
 }));
 
