@@ -16,7 +16,10 @@ const FoodRequest = require('./models/FoodRequest');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "https://your-frontend.vercel.app",
+  credentials: true
+}));
 app.use(express.json());
 
 // Model relationships
@@ -34,6 +37,9 @@ Food.hasMany(FoodRequest, { foreignKey: 'foodId', as: 'requests' });
 FoodRequest.belongsTo(Food, { foreignKey: 'foodId', as: 'food' });
 
 // Routes
+app.get("/", (req, res) => {
+  res.send("EcoBite Backend Running Successfully");
+});
 app.use('/api/auth', authRoutes);
 app.use('/api/food', foodRoutes);
 app.use('/api/requests', requestRoutes);
@@ -44,15 +50,16 @@ const PORT = process.env.PORT || 3000;
 
 const startServer = async () => {
   await connectDB();
+
   await sequelize.sync({ alter: true });
-  console.log('All tables synced successfully!');
+  console.log("All tables synced successfully!");
 
   app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
   });
 };
 
 startServer().catch((err) => {
-  console.error('Server startup failed:', err);
+  console.error("Server startup failed:", err);
   process.exit(1);
 });
