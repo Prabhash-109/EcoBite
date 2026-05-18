@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors'); 
 require('dotenv').config();
 
-const { connectDB, sequelize } = require('./config/db'); // Sequelize setup
+const { connectDB, sequelize } = require('./config/db')
 const authRoutes = require('./routes/authRoutes');
 const foodRoutes = require('./routes/foodRoutes');
 const requestRoutes = require('./routes/requestRoutes');
@@ -33,17 +33,6 @@ User.hasMany(FoodRequest, { foreignKey: 'volunteerId', as: 'volunteerAssignments
 Food.hasMany(FoodRequest, { foreignKey: 'foodId', as: 'requests' });
 FoodRequest.belongsTo(Food, { foreignKey: 'foodId', as: 'food' });
 
-// Connect to DB
-connectDB();
-
-sequelize.sync({ alter: true }) 
-  .then(() => {
-    console.log('All tables synced successfully!');
-  })
-  .catch((err) => {
-    console.error('Error syncing tables:', err);
-  });
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/food', foodRoutes);
@@ -52,6 +41,18 @@ app.use('/api/users', userRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+
+const startServer = async () => {
+  await connectDB();
+  await sequelize.sync({ alter: true });
+  console.log('All tables synced successfully!');
+
+  app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
+  });
+};
+
+startServer().catch((err) => {
+  console.error('Server startup failed:', err);
+  process.exit(1);
 });
